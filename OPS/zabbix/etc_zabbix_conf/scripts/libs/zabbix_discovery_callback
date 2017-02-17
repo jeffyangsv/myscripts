@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#vars
+CURR_PATH=$(cd $(dirname $0); pwd)
+
+#imports
+
+#functions of java
+function zabbix_callback_filter()
+{
+    [ $# -ne 2 ] && echo "number of paramters are 2, but given $#" && exit 4
+
+    local KEYWORD1="$1"
+    local KEYWORD2="$2"
+
+    eval "ps aux | egrep -iw \""$KEYWORD1"\" | egrep -i \""$KEYWORD2"\" | grep -v grep | awk --re-interval '{for(i=1;i<=NF;i++)if(\$i ~ \""$KEYWORD2"\"){print \$i}}'|awk -F'=' '{print \$NF}'"
+}
+
+function callback_discovery_mysql_slave()
+{
+    [ $# -ne 1 ] && echo "number of paramters are 1, but given $#" && exit 4
+ 
+    test -r $(dirname $0)/plugins/mysql_helpers.sh && . $(dirname $0)/plugins/mysql_helpers.sh || exit 1
+
+    local MYSQL_SOCKET="$1"
+    local MYSQL_BIN=$(which mysql)
+    local MYSQL_QUERY="show slave status\G"
+    local MYSQL_KEYWORD="^Replicate_"
+
+    [ -n  "$($MYSQL_BIN --defaults-file="$MYCNF_PATH" --connect_timeout=5 --batch -e "$MYSQL_QUERY" | sed -e 's/^\s*//g' | egrep -i "$MYSQL_KEYWORD")" ] && echo 0 || echo 1
+}
+
+function callback_discovery_java()
+{
+    [ $# -ne 1 ] && echo "number of paramters are 1, but given $#" && exit 4
+
+    local JAVA_PID="$1"
+    local UNEXPECTED_JAVA_PID=$(zabbix_callback_filter "(resin|tomcat)" "$JAVA_PID" )
+
+    [ ! -n  "$UNEXPECTED_JAVA_PID" ] && echo 0 || echo 1
+}

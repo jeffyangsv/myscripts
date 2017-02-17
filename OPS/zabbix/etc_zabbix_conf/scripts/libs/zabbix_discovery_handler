@@ -1,0 +1,109 @@
+#!/bin/sh
+
+CURR_PATH=$(cd $(dirname $0); pwd)
+. $CURR_PATH/libs/zabbix_discovery_callback
+
+
+# Usage: Collect Data and Passing to Zabbix Discovery for Items and Triggers Automaticlly
+# Param: 
+# $1 = Zabbix Varible  
+# $2 = Shell String for Zabbix Data Collection
+function zabbix_discovery_handler()
+{
+    [ $# -ne 3 ] && echo "paramters are 3, but given $#" && exit 4
+
+    local ZABBIX_VAR="$1"
+    local FILTER_STR="$2"
+    local CALLBACK_FUNCTION="$3"
+    local DATA_ARRARY=($(eval "$FILTER_STR"))
+    local ARRARY_LENGTH=${#DATA_ARRARY[@]}
+    printf "{\n"
+    printf  '\t'"\"data\":["
+    for ((i=0;i<$ARRARY_LENGTH;i++))
+    do
+        if [[ ! -n "$CALLBACK_FUNCTION" || "x$($CALLBACK_FUNCTION "${DATA_ARRARY[$i]}")" == "x0" ]];then
+            printf '\n\t\t{'
+            printf "\"{#$ZABBIX_VAR}\":\"${DATA_ARRARY[$i]}\"}"
+            if [ $i -lt $[$ARRARY_LENGTH-1] ];then
+                printf ','
+            fi
+        fi
+    done
+    printf  "\n\t]\n"
+    printf "}\n"
+}
+
+function zabbix_discovery_filter()
+{
+    [ $# -ne 4 ] && echo "number of paramters are 4, but given $#" && exit 4
+
+    local DISCOVERY_TYPE="$1"
+    local KEYWORD1="$2"
+    local KEYWORD2="$3"
+    local INVERT_MATCH="$4"
+    local IPlist=$(/sbin/ifconfig -a|grep inet|grep -v inet6|awk '{print $2}'|tr -d "addr:" |tr "\n" "|"|sed 's/.$//')
+
+    case "$DISCOVERY_TYPE" in
+    process)
+        echo "ps -ef | egrep -iw \""$KEYWORD1"\" | egrep -i \""$KEYWORD2"\" | egrep -iv \""$INVERT_MATCH"\" | grep -v grep | awk --re-interval '{for(i=1;i<=NF;i++)if(\$i ~ \""$KEYWORD1"\"){print \$i}}'|awk -F'=' '{print \$NF}'|awk '{print \$NF}' | sort -n | uniq 2>/dev/null"
+    ;;
+    pid)
+        echo "ps -ef | egrep -iw \""$KEYWORD1"\" | egrep -i \""$KEYWORD2"\" | egrep -iv \""$INVERT_MATCH"\" | grep -v grep | egrep -iwo '^[a-Z]+ +[0-9]+' |awk '{print \$NF}' | sort -n | uniq 2>/dev/null"
+    ;;
+    file)
+        echo "find "$KEYWORD1" -name "$KEYWORD2" 2>/dev/null | egrep -iv \""$INVERT_MATCH"\" |grep -v grep |awk -F'/' '{print \$NF}'" 
+    ;;
+    port)
+        echo "netstat -lntp | egrep -i \""$KEYWORD1"\" | egrep -iv \""$INVERT_MATCH"\" |grep -v grep | awk --re-interval '{for(i=1;i<=NF;i++)if(\$i ~ /:[0-9]*$/) print \$i}'|awk --re-interval -F':' '{print \$NF}'|sort -n|uniq 2>/dev/null"
+    ;;
+    docker)
+        echo "docker ps| awk '{print \$NF}' | grep -v 'NAMES'"
+    ;;
+    esac
+}
+
+function zabbix_discovery_check()
+{
+    [ $# -ne 4 ] && echo "number of paramters are 4, but given $#" && exit 4
+
+    local CHECK_TYPE="$1"
+    local KEYWORD1="$2"
+    local KEYWORD2="$3"
+    local INVERT_MATCH="$4"
+    local RETVAL=0
+
+    case "$CHECK_TYPE" in
+    process)
+        [ -n "$(ps -ef |egrep -i "$KEYWORD1" | egrep -iw "$KEYWORD2" | grep -v grep | grep -v "zabbix_discovery_items")" ] && RETVAL=0 || RETVAL=1
+        echo $RETVAL
+    ;;
+    file)
+        ([ -f "$KEYWORD1/$KEYWORD2" ] && [ ! -s "$KEYWORD1/$KEYWORD2" ] && RETVAL=0) || RETVAL=1
+        echo $RETVAL
+    ;;
+    port)
+        [ -n "$(lsof -i "$KEYWORD1")" ] && RETVAL=0 || RETVAL=1
+        echo $RETVAL
+    ;;
+    pid)
+        [ -n "$(ps -ef | egrep -i "^([a-z]|[0-9])+ +$2" | grep -v grep | grep -v "zabbix_discovery_items")" ] && RETVAL=0 || RETVAL=1
+        echo $RETVAL
+    ;;
+    docker)
+        [ -n "$(docker ps -f NAME=$KEYWORD1)" ] && RETVAL=0 || RETVAL=1
+        echo $RETVAL
+    ;;
+    conf_ps_nblk)
+        ps -ef | egrep -iw "$KEYWORD1" | egrep -i "^([a-z]|[0-9])+ +$KEYWORD2" | egrep -iv \'$INVERT_MATCH\' | grep -v grep | awk --re-interval '{for(i=1;i<=NF;i++)if($i ~ "'$KEYWORD1'"){print $i}}'|awk -F'=' '{print $NF}'|awk '{print $NF}' | sort -n | uniq 2>/dev/null
+    ;;
+    conf_ps_blk)
+        ps -ef | egrep -i "^([a-z]|[0-9])+ +$KEYWORD2" | egrep -io "$KEYWORD1" | grep -v grep | awk '{print $2}' | sort -n | uniq 2>/dev/null
+    ;;
+    conf_lsof)
+        $(which lsof) -p "$KEYWORD2" | egrep -i "$KEYWORD1" | $(which head) -1 | awk '{print $NF}'
+    ;;
+    conf_find)
+        $(which find) "$KEYWORD1" -name "$KEYWORD2" | egrep -iv \'$INVERT_MATCH\'
+    ;;
+    esac
+}

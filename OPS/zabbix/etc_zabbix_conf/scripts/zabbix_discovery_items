@@ -1,0 +1,223 @@
+#!/bin/bash
+
+#vars
+CURR_PATH=$(cd $(dirname $0); pwd)
+
+#imports
+. $CURR_PATH/libs/zabbix_discovery_handler
+
+
+#functions for checking process status
+function process_status()
+{
+    local PROCESS_TYPE="$1"
+    local PROCESS_NAME="$2"
+    
+    zabbix_discovery_check "process" "$PROCESS_TYPE" "$PROCESS_NAME" ""
+}
+
+#functions for checking log contend
+function file_log_status()
+{
+    local LOG_PATH="$1"
+    local LOG_NAME="$2"
+
+    zabbix_discovery_check "file" "$LOG_PATH" "$LOG_NAME" ""
+}
+
+#functions for port status
+function port_status()
+{
+    local PORT="$1"
+    
+    zabbix_discovery_check "port" "$PORT" "" ""
+}
+
+#functions for mysql plugins
+function mysql()
+{
+    local PARAMS="$@"
+
+    eval "$CURR_PATH/plugins/mysql.sh $PARAMS"
+}
+
+#functions for inotify plugins
+function file_inotify()
+{
+    local PARAMS="$@"
+
+    eval "$CURR_PATH/plugins/inotify_file_monitor.sh $PARAMS"
+}
+
+
+function pid_check()
+{
+    local PID="$1"
+    
+    zabbix_discovery_check "pid" "$PID" "" ""
+}
+
+function process_conf_path()
+{
+    local PROCESS_TYPE="$1"
+    local PID="$2"
+
+    case "$PROCESS_TYPE" in
+    java)
+        local CONF_PATH="$(zabbix_discovery_check  "conf_ps_nblk" "Dlog4j.configuration" "$PID" "(resin|tomcat|jboss)")"
+        local CONF_PATH="$(echo "$CONF_PATH"|awk -F'file:' '{print $NF}')"
+        [ -f "$CONF_PATH" ] && echo "$CONF_PATH" || echo "config not found !"
+    ;;
+    tomcat)
+        local CONF_PATH=$(zabbix_discovery_check  "conf_ps_nblk" "Dcatalina.(base|home)" "$PID" "no-invert")
+        local CONF_PATH="$CONF_PATH/conf"
+        [ -d "$CONF_PATH" ] && echo "$CONF_PATH" || echo "config not found !"
+    ;;
+    resin)
+        local CONF_PATH=$(zabbix_discovery_check  "conf_ps_nblk" "conf(.*)xml" "$PID" "no-invert")
+        [ -f "$CONF_PATH" ] && echo "$CONF_PATH" || echo "config not found !"
+    ;;
+    jboss)
+        local CONF_PATH=$(zabbix_discovery_check  "conf_ps_nblk" "Djava.endorsed.dirs" "$PID" "no-invert")
+        local CONF_PATH="$(echo "$CONF_PATH"|awk -F'/lib/' '{print $1}')/server/all/conf"
+        [ -d "$CONF_PATH" ] && echo "$CONF_PATH" || echo "config not found !"
+    ;;
+    redis)
+        local CONF_PATH=$(zabbix_discovery_check  "conf_ps_blk" "redis-server.*\.conf" "$PID" "no-invert")
+        if [ -n "$CONF_PATH" ];then
+            [ -f "$CONF_PATH" ] && echo "$CONF_PATH" || echo "config not found !"
+        else
+            local CONF_PATH=$(zabbix_discovery_check  "conf_lsof" "txt" "$PID" "no-invert")
+            local CONF_PATH="$(echo "$CONF_PATH"|awk -F'/bin/' '{print $1}')/redis.conf"
+            [ -f "$CONF_PATH" ] && echo "$CONF_PATH" || echo "config not found !"
+        fi
+    ;;
+    ttserver)
+        local CONF_PATH=$(zabbix_discovery_check  "conf_lsof" "txt" "$PID" "no-invert")
+        local CONF_PATH="$(echo "$CONF_PATH"|awk -F'/bin/' '{print $1}')/sbin/ttservctl"
+        [ -f "$CONF_PATH" ] && echo "$CONF_PATH" || echo "config not found !"
+    ;;
+    memcache)
+        echo "Memcache Has No Config File"
+    ;;
+    rabbitmq)
+        local CONF_PATH=$(zabbix_discovery_check  "conf_lsof" "/var/log/rabbitmq" "$PID" "no-invert")
+        local CONF_PATH="$(echo "$CONF_PATH"|awk -F'/var/' '{print $1}')/etc"
+        [ -d "$CONF_PATH" ] && echo "$CONF_PATH" || echo "config not found !"
+    ;;
+    httpsqs)
+        echo "Httpsqs Has No Config File"
+    ;;
+    nginx)
+        local CONF_PATH=$(zabbix_discovery_check  "conf_ps_blk" "\-c.*\.conf" "$PID" "no-invert")
+        if [ -n "$CONF_PATH" ];then
+            [ -f "$CONF_PATH" ] && echo "$CONF_PATH" || echo "config not found !"
+        else
+            local CONF_PATH=$(zabbix_discovery_check  "conf_lsof" "txt" "$PID" "no-invert")
+            local CONF_PATH="$(echo "$CONF_PATH"|awk -F'/sbin/' '{print $1}')/conf"
+            [ -d "$CONF_PATH" ] && echo "$CONF_PATH" || echo "config not found !"
+        fi
+    ;;
+    mysql)
+        local CONF_PATH=$(zabbix_discovery_check  "conf_ps_nblk" "defaults-file" "$PID" "no-invert")
+        [ -f "${CONF_PATH:-/etc/my.cnf}" ] && echo "${CONF_PATH:-/etc/my.cnf}" || echo "config not found !"
+    ;;
+    php)
+        local CONF_PATH=$(zabbix_discovery_check  "conf_lsof" "txt" "$PID" "no-invert")
+        local CONF_PATH="$(echo "$CONF_PATH"|awk -F'/sbin/' '{print $1}')/etc/php-fpm.conf"
+        [ -f "$CONF_PATH" ] && echo "$CONF_PATH" || echo "config not found !"
+    ;;
+    esac
+}
+
+function process_data_path()
+{
+    local PROCESS_TYPE="$1"
+    local PID="$2"
+
+    case "$PROCESS_TYPE" in
+    java)
+        local DATA_PATH="$(zabbix_discovery_check  "conf_lsof" "cwd" "$PID" "no-invert")"
+        [[ "$DATA_PATH" != "/root" && "$DATA_PATH" != "/"  ]] && [ -d "$DATA_PATH" ] && echo "$DATA_PATH" || echo "config not found !"
+    ;;
+    tomcat)
+        echo "No Way to Find Code Dir"
+    ;;
+    resin)
+        echo "No Way to Find Code Dir"
+    ;;
+    jboss)
+        local DATA_PATH=$(zabbix_discovery_check  "conf_ps_nblk" "Djava.endorsed.dirs" "$PID" "no-invert")
+        local DATA_PATH="$(echo "$DATA_PATH"|awk -F'/lib/' '{print $1}')/server/default/deploy"
+        [ -d "$DATA_PATH" ] && echo "$DATA_PATH" || echo "config not found !"
+    ;;
+    redis)
+        local DATA_PATH=$(zabbix_discovery_check  "conf_lsof" "cwd" "$PID" "no-invert")
+        local DATA_FILE=$(zabbix_discovery_check "conf_find" "$DATA_PATH" "*.rdb" "no-invert") 
+        if [ ${#DATA_FILE[@]} -gt 1 ];then
+            [ -d "${DATA_FILE%/*}" ] && echo "${DATA_FILE%/*}" || echo "config not found !"
+        else
+            [ -f "$DATA_FILE" ] && echo "$DATA_FILE" || echo "config not found !"
+        fi
+    ;;
+    ttserver)
+        local DATA_PATH=$(zabbix_discovery_check  "conf_ps_blk" "ulog.* -" "$PID" "no-invert")
+        [ -d "$DATA_PATH" ] && echo "$DATA_PATH" || echo "config not found !"
+    ;;
+    memcache)
+        echo "Memcache Has No Data File"
+    ;;
+    rabbitmq)
+        echo "Rabbitmq Has No Data File"
+    ;;
+    httpsqs)
+        local DATA_PATH=$(zabbix_discovery_check  "conf_lsof" "mem.*\.db" "$PID" "no-invert")
+        [ -f "$DATA_PATH" ] && echo "$DATA_PATH" || echo "config not found !"
+    ;;
+    nginx)
+        echo "Nginx Has No Data File"
+    ;;
+    mysql)
+        local DATA_PATH=$(zabbix_discovery_check  "conf_ps_nblk" "datadir" "$PID" "no-invert")
+        [ -d "$DATA_PATH" ] && echo "$DATA_PATH" || echo "config not found !"
+    ;;
+    php)
+        echo "No Way to Find Code Dir"
+    ;;
+    esac
+}
+
+case $1 in
+proc_status)
+    shift 1
+    process_status $@
+;;
+log_status)
+    shift 1
+    file_log_status $@
+;;
+port_status)
+    shift 1 
+    port_status $@
+;;
+inotify)
+    shift 1
+    file_inotify $@
+;;
+mysql)
+    shift 1
+    mysql $@
+;;
+pid)
+    shift 1
+    pid_check $@
+;;
+conf)
+    shift 1
+    process_conf_path $@
+;;
+data)
+    shift 1
+    process_data_path $@
+;;
+esac

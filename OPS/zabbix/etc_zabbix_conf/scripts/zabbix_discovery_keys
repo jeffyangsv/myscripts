@@ -1,0 +1,408 @@
+#!/bin/bash
+
+#vars
+CURR_PATH=$(cd $(dirname $0); pwd)
+
+#imports
+. $CURR_PATH/libs/zabbix_discovery_handler
+
+
+#functions of java
+function discovery_key_process_java()
+{
+    local KEYWORD1="Dmonitor.name"
+    local KEYWORD2="java" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="JAVA_PROC"
+    local FILTER_STR=$(zabbix_discovery_filter "process" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+#functions of mysql
+function discovery_key_mysql_socket()
+{
+    
+    local KEYWORD1="socket"
+    local KEYWORD2="mysqld" 
+    local INVERT_MATCH="mysqld_safe"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="MYSQL_SOCKET"
+    local CALLBACK_FUNC=""
+    local FILTER_STR=$(zabbix_discovery_filter "process" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_mysql_slave_socket()
+{
+    local KEYWORD1="socket"
+    local KEYWORD2="mysqld" 
+    local INVERT_MATCH="mysqld_safe"
+    local CALLBACK_FUNC="callback_discovery_mysql_slave"
+    local ZABBIX_VAR="MYSQL_SLAVE_SOCKET"
+    local FILTER_STR=$(zabbix_discovery_filter "process" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_file_inotify()
+{
+    local KEYWORD1="/.*/$"
+    local KEYWORD2="inotifywait -mrqd -o" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="FM_INOTIFY"
+    local FILTER_STR=$(zabbix_discovery_filter "process" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_file_log()
+{
+    local KEYWORD1="/App/log/fm_log"
+    local KEYWORD2="error_*.log" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="FM_LOG"
+    local FILTER_STR=$(zabbix_discovery_filter "file" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_port()
+{
+    local KEYWORD1="$1"
+    local KEYWORD2="" 
+    local INVERT_MATCH=$(/sbin/ifconfig -a|grep inet|grep -v inet6|awk '{print $2}'|tr -d "addr:" |tr "\n" "|"|sed 's/.$//')
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="TCP_PORT"
+    local FILTER_STR=$(zabbix_discovery_filter "port" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_docker()
+{
+    local KEYWORD1=""
+    local KEYWORD2="" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="DOCKER_NAME"
+    local FILTER_STR=$(zabbix_discovery_filter "docker" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+
+# functions process discovery by keyword and collect pid info
+function discovery_key_haproxy_pid()
+{
+    local KEYWORD1="haproxy"
+    local KEYWORD2="^([a-z]|[0-9])+ +[0-9]+ +1 +" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="HAPROXY_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_nginx_pid()
+{
+    local KEYWORD1="nginx"
+    local KEYWORD2="master" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="NGINX_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_httpd_pid()
+{
+    local KEYWORD1="httpd"
+    local KEYWORD2="^([a-z]|[0-9])+ +[0-9]+ +1 +" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="HTTPD_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_ttserver_pid()
+{
+    local KEYWORD1="ttserver"
+    local KEYWORD2="" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="TTSERVER_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_redis_pid()
+{
+    local KEYWORD1="redis-server"
+    local KEYWORD2="^([a-z]|[0-9])+ +[0-9]+ +1 +" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="REDIS_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_rabbitmq_pid()
+{
+    local KEYWORD1="rabbitmq"
+    local KEYWORD2="erlang" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="RABBITMQ_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_httpsqs_pid()
+{
+    local KEYWORD1="httpsqs"
+    local KEYWORD2="worker process" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="HTTPSQS_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_java_pid()
+{
+    local KEYWORD1="java"
+    local KEYWORD2="" 
+    local INVERT_MATCH="(resin.home|catalina.(home|base)|jboss)"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="JAVA_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_resin_pid()
+{
+    local KEYWORD1="java"
+    local KEYWORD2="resin.home" 
+    local INVERT_MATCH="^([a-z]|[0-9])+ +[0-9]+ +1 .*resin.watchdog"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="RESIN_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_resin_watchdog_pid()
+{
+    local KEYWORD1="java"
+    local KEYWORD2="^([a-z]|[0-9])+ +[0-9]+ +1 .*resin.watchdog" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="RESIN_WD_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_tomcat_pid()
+{
+    local KEYWORD1="java"
+    local KEYWORD2="catalina.(home|base)" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="TOMCAT_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_jboss_pid()
+{
+    local KEYWORD1="jboss"
+    local KEYWORD2="java" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="JBOSS_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_mysql_pid()
+{
+    local KEYWORD1="mysqld"
+    local KEYWORD2="" 
+    local INVERT_MATCH="mysqld_safe"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="MYSQL_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_php_pid()
+{
+    local KEYWORD1="php-fpm"
+    local KEYWORD2="master" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="PHP_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_memcache_pid()
+{
+    local KEYWORD1="memcached"
+    local KEYWORD2="*.pid" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="MEMCACHE_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_sphinx_pid()
+{
+    local KEYWORD1="sphinx"
+    local KEYWORD2="^([a-z]|[0-9])+ +[0-9]+ +1 +" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="SPHINX_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_mongodb_pid()
+{
+    local KEYWORD1="mongodb"
+    local KEYWORD2="^([a-z]|[0-9])+ +[0-9]+ +1 +" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="MONGODB_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_varnish_pid()
+{
+    local KEYWORD1="varnishd"
+    local KEYWORD2="^([a-z]|[0-9])+ +[0-9]+ +1 +" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="VARNISH_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+function discovery_key_keepalive_pid()
+{
+    local KEYWORD1="keepalived"
+    local KEYWORD2="^([a-z]|[0-9])+ +[0-9]+ +1 +" 
+    local INVERT_MATCH="no-invert"
+    local CALLBACK_FUNC=""
+    local ZABBIX_VAR="KEEPALIVED_PID"
+    local FILTER_STR=$(zabbix_discovery_filter "pid" "$KEYWORD1" "$KEYWORD2" "$INVERT_MATCH")
+
+    zabbix_discovery_handler "$ZABBIX_VAR"  "$FILTER_STR" "$CALLBACK_FUNC"
+}
+
+case $1 in
+java_discovery)
+    shift 1
+    discovery_key_process_java
+;;
+log_discovery)
+    shift 1
+    discovery_key_file_log
+;;
+port_discovery)
+    shift 1 
+    discovery_key_port "$@"
+;;
+inotify_discovery)
+    shift 1
+    discovery_key_file_inotify
+;;
+mysql_discovery)
+    discovery_key_mysql_socket
+;;
+mysql_slave_discovery)
+    discovery_key_mysql_slave_socket
+;;
+java_pid_discovery)
+    discovery_key_java_pid
+;;
+resin_pid_discovery)
+    discovery_key_resin_pid
+;;
+resin_watchdog_pid_discovery)
+    discovery_key_resin_watchdog_pid
+;;
+tomcat_pid_discovery)
+    discovery_key_tomcat_pid
+;;
+jboss_pid_discovery)
+    discovery_key_jboss_pid
+;;
+redis_pid_discovery)
+    discovery_key_redis_pid
+;;
+ttserver_pid_discovery)
+    discovery_key_ttserver_pid
+;;
+memcache_pid_discovery)
+    discovery_key_memcache_pid
+;;
+varnish_pid_discovery)
+    discovery_key_varnish_pid
+;;
+haproxy_pid_discovery)
+    discovery_key_haproxy_pid 
+;;
+nginx_pid_discovery)
+    discovery_key_nginx_pid
+;;
+httpd_pid_discovery)
+    discovery_key_httpd_pid
+;;
+rabbitmq_pid_discovery)
+    discovery_key_rabbitmq_pid
+;;
+httpsqs_pid_discovery)
+    discovery_key_httpsqs_pid
+;;
+mysql_pid_discovery)
+    discovery_key_mysql_pid
+;;
+mongodb_pid_discovery)
+    discovery_key_mongodb_pid
+;;
+php_pid_discovery)
+    discovery_key_php_pid
+;;
+sphinx_pid_discovery)
+    discovery_key_sphinx_pid
+;;
+keepalive_pid_discovery)
+    discovery_key_keepalive_pid
+;;
+esac
