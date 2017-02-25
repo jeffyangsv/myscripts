@@ -19,9 +19,9 @@ AppSrcBase=/App/src/OPS
 AppTarBall=$App.tar.gz
 AppBuildBase=/App/build/OPS
 AppBuildDir=$(echo "$AppBuildBase/$AppTarBall" | sed -e 's/.linux.*$//' -e 's/^.\///')
-AppProg=$AppInstallDir/prometheus
-AppConf=$AppInstallDir/prometheus.yml
-AppConfName=prometheus.yml
+AppProg=$AppInstallDir/$AppName
+AppConf=$AppInstallDir/$AppName.yml
+
 
 
 RemoveFlag=0
@@ -56,12 +56,12 @@ fremove()
     fpid
     RemoveFlag=1
 
-    Day=$(date +%Y-%m-%d)
-    BackupFile=$AppName.$Day.yml.bak
-    if [ -f "$AppConfDir/$AppConfName" ]; then
-    	mv $AppConfDir/$AppConfName /App/conf/OPS/$BackupFile
-    #    [ $? -eq 0 ] && echo "$AppConfName 删除时备份配置文件成功" || echo "$AppConfName 删除时备份配置文件失败"
-    fi
+    #Day=$(date +%Y-%m-%d)
+    #BackupFile=$AppName.$Day.yml.bak
+    #if [ -f "$AppConfDir/$AppConfName" ]; then
+    #	mv $AppConfDir/$AppConfName /App/conf/OPS/$BackupFile
+    #   [ $? -eq 0 ] && echo "$AppConfName 删除时备份配置文件成功" || echo "$AppConfName 删除时备份配置文件失败"
+    #fi
 
     if [ -z "$AppMasterPid" ]; then
         if [ -d "$AppInstallDir" ]; then
@@ -152,12 +152,10 @@ fstart()
     if [ -n "$AppMasterPid" ]; then
         echo "$AppName 正在运行"
     else
-        #$AppProg -config.file=$AppConf & && echo "启动 $AppName" || echo "$AppName 启动失败"
-        $AppProg -config.file=$AppConfDir/$AppConfName \
+        $AppProg -config.file=$AppConfDir/$AppName.yml \
 		 -storage.local.path=$AppInstallDir/data \
 		 -web.console.libraries=$AppInstallDir/console_libraries \
 		 -web.console.templates=$AppInstallDir/consoles &>/dev/null &
-        #$AppProg -config.file=$AppConfDir/$AppConfName &>/dev/null && echo "启动 $AppName" || echo "$AppName 启动失败" &
 	 [ $? -eq 0 ] && echo "$AppName 启动成功" || echo "$AppName 启动失败"
     fi
 } 
