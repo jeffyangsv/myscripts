@@ -20,7 +20,7 @@ AppTarBall=$App.tar.gz
 AppBuildBase=/App/build/OPS
 AppBuildDir=$(echo "$AppBuildBase/$AppTarBall" | sed -e 's/.linux.*$/-1/' -e 's/^.\///')
 AppProg=$AppInstallDir/usr/bin/influxd
-AppConf=$AppInstallDir/etc/influxdb/influxd.conf
+AppConf=$AppInstallDir/etc/influxdb/influxdb.conf
 
 AppDataBase=/App/data
 AppDataDir=/App/data/OPS/$AppName
@@ -28,11 +28,10 @@ AppDataDir=/App/data/OPS/$AppName
 RemoveFlag=0
 InstallFlag=0
 
-
 # 获取PID
 fpid()
 {
-    AppMasterPid=$(ps ax | grep "influxd" | grep -v "grep" | awk '{print $1}' 2> /dev/null)
+    AppMasterPid=$(ps ax | grep "influxdb" | grep -v "grep" | awk '{print $1}' 2> /dev/null)
 }
 
 # 查询状态
@@ -111,22 +110,16 @@ fupdate()
     [ $RemoveFlag -ne 1 ] && fbackup
 
     test -d "$AppBuildDir" && rm -rf $AppBuildDir
-	
-	useradd -s /sbin/nologin influxdb  &>/dev/null
-	#data 存放最终存储的数据,文件以.tsm结尾;meta 存放数据库元数据;wal 存放预写日志文件;
-
-	mkdir -p $AppDataDir/{data,meta,wal}
-	mkdir -p $AppConfDir  
-	mkdir -p $AppLogDir
-	chown -R influxdb:influxdb $AppDataDir
-	chown -R influxdb:influxdb $AppLogDir
-	
     tar zxf $AppSrcBase/$AppTarBall -C $AppBuildBase || tar jxf $AppSrcBase/$AppTarBall -C $AppBuildBase
-    cp  -rp  $AppBuildDir  $AppInstallDir
-    $AppProg config > $AppConfDir/$AppName.conf
-    sed -i "s#/root/.influxdb#${AppDataDir}#g" $AppConfDir/$AppName.conf
-    sed -i "/^\[admin\]/{n;s/false/true/}" $AppConfDir/$AppName.conf
-	
+    cp -rp $AppBuildDir $AppInstallDir
+
+    useradd -s /sbin/nologin influxdb  &>/dev/null
+    #data 存放最终存储的数据,文件以.tsm结尾;meta 存放数据库元数据;wal 存放预写日志文件;
+    mkdir -p $AppDataDir/{data,meta,wal}
+    mkdir -p $AppLogDir
+    chown -R influxdb:influxdb $AppDataDir
+    chown -R influxdb:influxdb $AppLogDir
+    $AppProg config > $AppConf
     if [ $? -eq 0 ]; then
         echo "$AppName $Operate成功"
     else
@@ -143,18 +136,17 @@ fsymlink()
     [ -L $AppLogDir ] && rm -f $AppLogDir
 
     ln -s $AppInstallDir  $AppOptDir
-    ln -s $AppInstallDir/usr/bin/influx /usr/bin &>/dev/null
 }
 
 # 拷贝配置
 fcpconf()
 { 
-    echo "拷贝配置"
-    #$AppProg config >$AppConfDir/$AppName.conf
-    #sed -i "s#/root/.influxdb#${AppDataDir}#g" $AppConfDir/$AppName.conf
-    #sed -i "/^\[admin\]/{n;s/false/true/}" $AppConfDir/$AppName.conf
+    mkdir $AppConfDir   &>/dev/null
+    ln -s $AppConf $AppConfDir/  &>/dev/null
+    sed -i "s#/root/.influxdb#${AppDataDir}#g" $AppConfDir/$AppName.conf
+    sed -i "/^\[admin\]/{n;s/false/true/}" $AppConfDir/$AppName.conf
+    ln -s $AppInstallDir/usr/bin/influx /usr/bin &>/dev/null
 }
-
 
 # 启动
 fstart()
@@ -163,9 +155,9 @@ fstart()
     if [ -n "$AppMasterPid" ]; then
         echo "$AppName 正在运行"
     else
-		#/App/install/OPS/influxdb/usr/bin/influxd -config=/App/conf/OPS/influxdb/influxdb.conf
-        $AppProg -config="$AppConfDir/$AppName.conf" &>/dev/null &
-	    [ $? -eq 0 ] && echo "$AppName 启动成功" || echo "$AppName 启动失败"
+        #/App/install/OPS/influxdb/usr/bin/influxd -config=/App/conf/OPS/influxdb/influxdb.conf
+	$AppProg -config="$AppConfDir/$AppName.conf" &>/dev/null &
+	[ $? -eq 0 ] && echo "$AppName 启动成功" || echo "$AppName 启动失败"
     fi
 } 
 
@@ -211,7 +203,6 @@ ScriptFile=$(basename $0)
 case "$1" in
     "install"   ) finstall;;
     "update"    ) fupdate;;
-    "cpconf"    ) fcpconf;;
     "reinstall" ) fremove && finstall;;
     "remove"    ) fremove;;
     "backup"    ) fbackup;;
@@ -226,7 +217,6 @@ case "$1" in
     echo "$ScriptFile reinstall            重装 $AppName"
     echo "$ScriptFile remove               删除 $AppName"
     echo "$ScriptFile backup               备份 $AppName"
-    echo "$ScriptFile cpconf               拷贝 $AppName"
     echo "$ScriptFile start                启动 $AppName"
     echo "$ScriptFile status               状态 $AppName"
     echo "$ScriptFile stop                 停止 $AppName"
