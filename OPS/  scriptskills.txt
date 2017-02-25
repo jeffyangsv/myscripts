@@ -1,0 +1,31 @@
+mkdir -p /App/{backup,build,conf,data,install,log,mnt,opt,scripts,src,srt,sync}/{OPS,SRT}
+
+1.Sed使用技巧:
+#替换带特殊字符的语句
+sed -i "s#/root/.influxdb#/App/data/OPS/influxdb#g" /App/conf/OPS/influxdb/influxdb.conf
+#替换指定行的下一行
+sed -i "/^\[admin\]/{n;s/false/true/}" /App/conf/OPS/influxdb/influxdb.conf
+
+
+2.Cut使用技巧:
+
+
+
+3. Awk使用技巧:
+
+
+
+4.Git使用命令:
+git clone https://github.com/guolikai/
+git status
+git fetch origin master  #该指令意思是从远程origin仓库的master主分支更新最新的版本到origin/master分支上
+git log -p master..origin/master  #执行的回显结果会详细列出这两个分支的差异
+git merge origin/master  #合并
+git push origin master
+在本地打开“终端”
+输入“git init”，让本地git初始化
+输入“git add 111.txt”，将本地111.txt添加到本地git中
+输入“git commit -m ‘first Commit’ ”，将任务提交并填写提交日志信息
+输入“git remote add origin https://github.com/gsb001/FirstPepo.git”，将远端https://github.com/gsb001/FirstPepo.git绑定到本地git上
+输入“git push -u origin master”，将任务推送到远端origin的master分支上
+
