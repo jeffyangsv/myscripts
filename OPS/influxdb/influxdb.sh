@@ -19,8 +19,8 @@ AppSrcBase=/App/src/OPS
 AppTarBall=$App.tar.gz
 AppBuildBase=/App/build/OPS
 AppBuildDir=$(echo "$AppBuildBase/$AppTarBall" | sed -e 's/.linux.*$/-1/' -e 's/^.\///')
-AppProg=$AppInstallDir/usr/bin/influxd
-AppConf=$AppInstallDir/etc/influxdb/influxdb.conf
+AppProg=$AppInstallDir/usr/bin/$AppName
+AppConf=$AppInstallDir/etc/$AppName/$AppName.conf
 
 AppDataBase=/App/data
 AppDataDir=/App/data/OPS/$AppName
@@ -194,7 +194,7 @@ fkill()
 frestart()
 {
     fpid
-    [ -n "$AppMasterPid" ] && fstop && sleep 1
+    [ -n "$AppMasterPid" ] && fstop &>/dev/null && sleep 1
     fstart
 }
 
