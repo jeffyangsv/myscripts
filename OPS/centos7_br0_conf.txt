@@ -1,0 +1,48 @@
+#centos7_br0桥接设置
+[root@localhost network-scripts]# cat ifcfg-lo 
+DEVICE=lo
+IPADDR=127.0.0.1
+NETMASK=255.0.0.0
+NETWORK=127.0.0.0
+# If you're having problems with gated making 127.0.0.0/8 a martian,
+# you can change this to something else (255.255.255.255, for example)
+BROADCAST=127.255.255.255
+ONBOOT=yes
+NAME=loopback
+
+[root@localhost network-scripts]# cat ifcfg-eno16777736 
+NAME=eno16777736
+DEVICE=eno16777736
+ONBOOT=yes
+BRIDGE=br0
+
+[root@localhost network-scripts]# cat ifcfg-br0
+TYPE=Bridge
+BOOTPROTO=static
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+NAME=br0
+#UUID=c5110b98-c5fa-43d3-93bf-eddee26b141c
+DEVICE=br0
+ONBOOT=yes
+#HWADDR=00:0C:29:37:2A:5E
+DNS1=202.106.0.20
+IPADDR=172.16.1.100
+PREFIX=24
+GATEWAY=172.16.1.2
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_PRIVACY=no
+
+[root@localhost network-scripts]# cat ifcfg-br0:0
+DEVICE=br0:0
+IPADDR=172.16.1.112
+NETMASK=255.255.255.255
+BROADCAST=172.16.1.112
+ONBOOT=yes
+NAME=loopback
+
