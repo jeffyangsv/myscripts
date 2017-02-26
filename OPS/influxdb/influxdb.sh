@@ -19,9 +19,8 @@ AppSrcBase=/App/src/OPS
 AppTarBall=$App.tar.gz
 AppBuildBase=/App/build/OPS
 AppBuildDir=$(echo "$AppBuildBase/$AppTarBall" | sed -e 's/.linux.*$/-1/' -e 's/^.\///')
-AppProg=$AppInstallDir/usr/bin/$AppName
+AppProg=$AppInstallDir/usr/bin/influxd
 AppConf=$AppInstallDir/etc/$AppName/$AppName.conf
-
 AppDataBase=/App/data
 AppDataDir=/App/data/OPS/$AppName
 
@@ -86,11 +85,9 @@ fbackup()
     fi
 }
 
-
 # 安装
 finstall()
 {
-
     fpid
     InstallFlag=1
 
@@ -148,6 +145,26 @@ fcpconf()
     ln -s $AppInstallDir/usr/bin/influx /usr/bin &>/dev/null
 }
 
+#权限配置
+fsetconf()
+{
+    fpid
+    if [ -n "$AppMasterPid" ]; then
+        AdminUser=admin
+        AdminPass=admin
+        influx -execute "CREATE USER "$AdminUser" WITH PASSWORD '$AdminPass' WITH ALL PRIVILEGES" $>/dev/null &&  echo "$AppName 管理员用户创建成功" || echo "$AppName 管理员用户创建失败"
+	Result=$(grep -w "auth-enabled = false" $AppConfDir/$AppName.conf |wc -l)
+        if [ $Result -eq 1 ];then
+            sed -i  "/auth-enabled = false/s/false/true/" $AppConfDir/$AppName.conf  &&  echo "$AppName 权限配置成功" && frestart &>/dev/null 
+	else 
+	    echo "$AppName 权限已配置" 
+	fi 
+    else 
+	echo "$AppName 未运行"
+    fi
+    
+}
+
 # 启动
 fstart()
 {
@@ -165,7 +182,6 @@ fstart()
 fstop()
 {
     fpid
-
     if [ -n "$AppMasterPid" ]; then
         kill -9 $AppMasterPid  &>/dev/null && echo "停止 $AppName" || echo "$AppName 停止失败"
     else
@@ -177,7 +193,6 @@ fstop()
 fkill()
 {
     fpid
-
     if [ -n "$AppMasterPid" ]; then
         echo "$AppMasterPid" | xargs kill -9 &>/dev/null
         if [ $? -eq 0 ]; then
@@ -194,7 +209,7 @@ fkill()
 frestart()
 {
     fpid
-    [ -n "$AppMasterPid" ] && fstop &>/dev/null && sleep 1
+    [ -n "$AppMasterPid" ] && fstop && sleep 1
     fstart
 }
 
@@ -206,6 +221,7 @@ case "$1" in
     "reinstall" ) fremove && finstall;;
     "remove"    ) fremove;;
     "backup"    ) fbackup;;
+    "setconf"	) fsetconf;;
     "start"     ) fstart;;
     "stop"      ) fstop;;
     "status"    ) fstatus;;
@@ -217,6 +233,7 @@ case "$1" in
     echo "$ScriptFile reinstall            重装 $AppName"
     echo "$ScriptFile remove               删除 $AppName"
     echo "$ScriptFile backup               备份 $AppName"
+    echo "$ScriptFile setconf              配置 $AppName"
     echo "$ScriptFile start                启动 $AppName"
     echo "$ScriptFile status               状态 $AppName"
     echo "$ScriptFile stop                 停止 $AppName"
