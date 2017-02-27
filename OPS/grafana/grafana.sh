@@ -27,7 +27,12 @@ AppConf=$AppInstallDir/conf/$AppName.ini
 AppDataDir=/App/data/OPS/$AppName
 AppPluginsDir=$AppDataDir/plugins
 AppPidFile=$AppDataDir/$AppName.pid
+
 MysqlIp=172.16.1.100
+MysqlUser=root
+MysqlPass=123456 
+MysqlProg=/usr/bin/mysql
+MysqlSock=/var/lib/mysql/mysql.sock
 
 RemoveFlag=0
 InstallFlag=0
@@ -42,7 +47,6 @@ fpid()
 fstatus()
 {
     fpid
-
     if [ ! -f "$AppProg" ]; then
         echo "$AppName 未安装"
     else
@@ -101,10 +105,8 @@ fbackup()
 # 安装
 finstall()
 {
-
     fpid
     InstallFlag=1
-
     if [ -z "$AppMasterPid" ]; then
         test -f "$AppProg" && echo "$AppName 已安装" 
         [ $? -ne 0 ] && fupdate && fsymlink && fcpconf 
@@ -145,7 +147,6 @@ fsymlink()
     [ -L $AppOptDir ] && rm -f $AppOptDir
     [ -L $AppConfDir ] && rm -f $AppConfDir
     [ -L $AppLogDir ] && rm -f $AppLogDir
-
     ln -s $AppInstallDir $AppOptDir
 }
 
@@ -156,13 +157,32 @@ fcpconf()
 	sed -i "/^logs/clogs = $AppLogDir"   					$AppConfDir/$AppName.ini
 	sed -i "/^data = data/cdata = $AppDataDir"   				$AppConfDir/$AppName.ini
 	sed -i "/^plugins/cplugins = $AppPluginsDir"   				$AppConfDir/$AppName.ini
-	sed -i '/^type = sqlite3/ctype = mysql'   				$AppConfDir/$AppName.ini
-	sed -i "/^host = 127.0.0.1:3306/chost =$MysqlIp:3306" 			$AppConfDir/$AppName.ini
-	sed -i '/^name = grafana/cname = grafana'   				$AppConfDir/$AppName.ini
-	sed -i '/^user = root/cuser = grafana'     				$AppConfDir/$AppName.ini
-	sed -i '/^password =/cpassword = grafana'   				$AppConfDir/$AppName.ini
 	sed -i '/\[dashboards.json\]/{n;s#false#true#}'  			$AppConfDir/$AppName.ini
 	sed -i "/\[dashboards.json\]/{n;n;s#/var/lib/grafana#$AppDataDir#}"  	$AppConfDir/$AppName.ini
+}
+
+# 配置Mysql数据库存储
+fdatabase()
+{
+    MysqlPid=$(ps ax | grep -w "mysqld" | grep -v "grep" | awk '{print $1}' 2> /dev/null)
+    MysqlConn="$MysqlProg -h$MysqlIp -u$MysqlUser -p$MysqlPass -S $MysqlSock"
+    if [ -n "MysqlPid" ];then 
+	Result=$($MysqlConn -e "show databases" | grep -w "grafana" | wc -l)
+		if [ $Result -eq 0 ];then
+			$MysqlConn -e "create database if not exists grafana default character set utf8;" && \
+			$MysqlConn -e "grant all on grafana.* to 'grafana'@'$MysqlIp' identified by 'grafana';" && \
+			$MysqlConn -e "flush privileges"  && echo "$AppName 数据库创建授权成功"
+			sed -i '/^type = sqlite3/ctype = mysql'   			$AppConfDir/$AppName.ini
+			sed -i "/^host = 127.0.0.1:3306/chost =$MysqlIp:3306" 		$AppConfDir/$AppName.ini
+			sed -i '/^name = grafana/cname = grafana'   			$AppConfDir/$AppName.ini
+			sed -i '/^user = root/cuser = grafana'     			$AppConfDir/$AppName.ini
+			sed -i '/^password =/cpassword = grafana'   			$AppConfDir/$AppName.ini
+		else 
+			echo "$AppName 数据库已存在" 
+		fi
+    else
+        echo "mysql 数据库未启动" 
+    fi
 }
 
 # 启动
@@ -207,7 +227,6 @@ fkill()
     fi
 }
 
-
 # 重启
 frestart()
 {
@@ -231,7 +250,6 @@ fcli(){
     else
         echo "$AppName 未启动"
     fi
-
 	#grafana-cli plugins install  $(grafana-cli plugins list-remote | grep zabbix | awk '{print $2}')
 }
 
@@ -243,6 +261,7 @@ case "$1" in
     "reinstall" ) fremove && finstall;;
     "remove"    ) fremove;;
     "backup"    ) fbackup;;
+    "database"  ) fdatabase;;
     "start"     ) fstart;;
     "stop"      ) fstop;;
     "status"    ) fstatus;;
@@ -255,6 +274,7 @@ case "$1" in
     echo "$ScriptFile reinstall            重装 $AppName"
     echo "$ScriptFile remove               删除 $AppName"
     echo "$ScriptFile backup               备份 $AppName"
+    echo "$ScriptFile database             配置 $AppName"
     echo "$ScriptFile start                启动 $AppName"
     echo "$ScriptFile status               状态 $AppName"
     echo "$ScriptFile stop                 停止 $AppName"
@@ -263,4 +283,3 @@ case "$1" in
     echo "$ScriptFile kill                 终止 $AppName 进程"
     ;;
 esac
-
