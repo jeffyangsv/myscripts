@@ -153,18 +153,16 @@ fsymlink()
 fcpconf()
 { 
     ln -s $AppConf  $AppConfDir/
-	sed -i "/^logs/clogs = $AppDataDir"   	$AppConfDir/$AppName.ini
-	sed -i "/^data = data/cdata = $AppDataDir"   	$AppConfDir/$AppName.ini
+	sed -i "/^logs/clogs = $AppLogDir"   					$AppConfDir/$AppName.ini
+	sed -i "/^data = data/cdata = $AppDataDir"   				$AppConfDir/$AppName.ini
 	sed -i "/^plugins/cplugins = $AppPluginsDir"   				$AppConfDir/$AppName.ini
-#	sed -i '/^type = sqlite3/ctype = mysql'   					$AppConfDir/$AppName.ini
-#	sed -i "/^host = 127.0.0.1:3306/chost =$MysqlIp:3306" 		$AppConfDir/$AppName.ini
-#	sed -i '/^name = grafana/cname = grafana'   					$AppConfDir/$AppName.ini
-#	sed -i '/^user = root/cuser = grafana'     					$AppConfDir/$AppName.ini
-#	sed -i '/^password =/cpassword = grafana'   					$AppConfDir/$AppName.ini
+	sed -i '/^type = sqlite3/ctype = mysql'   				$AppConfDir/$AppName.ini
+	sed -i "/^host = 127.0.0.1:3306/chost =$MysqlIp:3306" 			$AppConfDir/$AppName.ini
+	sed -i '/^name = grafana/cname = grafana'   				$AppConfDir/$AppName.ini
+	sed -i '/^user = root/cuser = grafana'     				$AppConfDir/$AppName.ini
+	sed -i '/^password =/cpassword = grafana'   				$AppConfDir/$AppName.ini
 	sed -i '/\[dashboards.json\]/{n;s#false#true#}'  			$AppConfDir/$AppName.ini
-	sed -i "/\[dashboards.json\]/{n;n;s#/var/lib/grafana#$AppDataDir#}"  $AppConfDir/$AppName.ini
-
-
+	sed -i "/\[dashboards.json\]/{n;n;s#/var/lib/grafana#$AppDataDir#}"  	$AppConfDir/$AppName.ini
 }
 
 # 启动
