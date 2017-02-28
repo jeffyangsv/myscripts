@@ -1,5 +1,12 @@
 1.mysql
 
 2.zabbix
+wget https://sourceforge.net/projects/zabbix/files/latest/download/zabbix-3.2.4.tar.gz
 
 3.grafana
+wget https://grafanarel.s3.amazonaws.com/builds/grafana-4.1.2-1486989747.linux-x64.tar.gz
+tar -zxvf grafana-4.1.2-1486989747.linux-x64.tar.gz
+cd grafana-4.1.2-1486989747
+cp conf/sample.ini conf/custom.ini
+#  make changes to conf/custom.ini then start grafana-server
+./bin/grafana-server
