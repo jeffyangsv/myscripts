@@ -1,5 +1,4 @@
 mkdir -p /App/{backup,build,conf,data,install,log,mnt,opt,scripts,src,srt,sync}/{OPS,SRT}
-
 1.Sed使用技巧:
 #替换带特殊字符的语句
 sed -i "s#/root/.influxdb#/App/data/OPS/influxdb#g" /App/conf/OPS/influxdb/influxdb.conf
@@ -12,7 +11,19 @@ sed -i "/^\[admin\]/{n;s/false/true/}" /App/conf/OPS/influxdb/influxdb.conf
 
 
 3. Awk使用技巧:
-
+<1>.求和
+cat data|awk '{sum+=$1} END {print "Sum = ", sum}'
+<2>.求平均
+cat data|awk '{sum+=$1} END {print "Average = ", sum/NR}'
+<3>.求最大值
+cat data|awk 'BEGIN {max = 0} {if ($1>max) max=$1 fi} END {print "Max=", max}'
+<4>.求最小值（min的初始值设置一个超大数即可）
+awk 'BEGIN {min = 1999999} {if ($1<min) min=$1 fi} END {print "Min=", min}'
+<5>.应用
+过滤IP ifconfig eth0 | grep "inet addr:" | awk '{print $2}' | awk -F: '{print $2}'
+提取根分区使用率 df -hT / | tail -1 | awk '{print $6}'
+读取数据求和：du -s /data/mysql/3306/data/bin* |awk '{a+=$1}END{print a/1024/1024}'
+HOST=`/sbin/ifconfig eth0 |grep "inet addr" |awk -F[:" "] '{print $13}'` 
 
 
 4.Git使用命令:
@@ -29,3 +40,4 @@ git push origin master
 输入“git remote add origin https://github.com/gsb001/FirstPepo.git”，将远端https://github.com/gsb001/FirstPepo.git绑定到本地git上
 输入“git push -u origin master”，将任务推送到远端origin的master分支上
 
+5.zabbix设置
