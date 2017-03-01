@@ -1,6 +1,6 @@
 #/bin/bash
 ##################################################
-#Name:        prometheus_.sh
+#Name:        prometheus_remote.sh
 #Version:     v1.5.2
 #Create_Date: 2017-3-1
 #Author:      GuoLikai(glk73748196@sina.com)
@@ -23,11 +23,8 @@ AppProg=$AppInstallDir/$AppName
 AppConf=$AppInstallDir/$AppName.yml
 
 InfluxdbIp=172.16.1.20
-MysqlIp=localhost
-MysqlUser=root
-MysqlPass=123456 
-MysqlProg=/usr/bin/mysql
-MysqlSock=/tmp/mysql_3306.sock
+InfluxdbUser=admin
+InfluxdbPass=admin 
 
 
 RemoveFlag=0
@@ -150,6 +147,26 @@ fcpconf()
     ln -s  $AppConf $AppConfDir/  &>/dev/null
 }
 
+fdatabase()
+{
+    InfluxdbPid=$(ps ax | grep "influxd" | grep -v "grep" | awk '{print $1}' 2> /dev/null)
+    InfluxConn="influx -username $InfluxdbUser -password $InfluxdbUser"
+    if [ -n "$InfluxdbPid" ];then 
+	Result=$($InfluxConn -execute "show databases" | grep -w "prometheus" | wc -l)
+	if [ $Result -eq 0 ];then
+ 	    $InfluxConn -execute "create database $AppName" 
+            $InfluxConn -execute "create user "prometheus" with password '$AppName'" 
+            $InfluxConn -execute "GRANT ALL ON $AppName TO $AppName" && echo "$AppName 数据库创建授权成功"
+	#influx -username telegraf -password prometheus  -database prometheus  #访问数据库命令
+	else 
+	    echo "$AppName 数据库已存在" 
+	fi
+    else
+        echo "Influxdb 数据库未启动" 
+    fi
+
+}
+
 # 启动
 fstart()
 {
@@ -158,10 +175,15 @@ fstart()
     if [ -n "$AppMasterPid" ]; then
         echo "$AppName 正在运行"
     else
-        $AppProg -config.file=$AppConfDir/$AppName.yml \
-		 -storage.local.path=$AppInstallDir/data \
-		 -web.console.libraries=$AppInstallDir/console_libraries \
-		 -web.console.templates=$AppInstallDir/consoles &>/dev/null &
+        #App/install/OPS/prometheus/prometheus  -config.file=/App/conf/OPS/prometheus/prometheus.yml -web.console.libraries=/App/conf/OPS/prometheus/console_libraries -web.console.templates=/App/conf/OPS/prometheusconsoles -storage.remote.influxdb-url='http://172.16.1.20:8086' -storage.remote.influxdb.database=prometheus -storage.remote.influxdb.retention-policy=autogen -storage.remote.influxdb.username=prometheus
+        export INFLUXDB_PW=prometheus
+	$AppProg -config.file=$AppConfDir/$AppConfName \
+                 -web.console.libraries=$AppInstallDir/console_libraries \
+                 -web.console.templates=$AppInstallDir/consoles \
+		-storage.remote.influxdb-url='http://$InfluxdbIp:8086' \
+		-storage.remote.influxdb.database=prometheus \
+		-storage.remote.influxdb.retention-policy=autogen \
+		-storage.remote.influxdb.username=prometheus  &>/dev/null &
 	 [ $? -eq 0 ] && echo "$AppName 启动成功" || echo "$AppName 启动失败"
     fi
 } 
@@ -211,6 +233,7 @@ case "$1" in
     "reinstall" ) fremove && finstall;;
     "remove"    ) fremove;;
     "backup"    ) fbackup;;
+    "database"  ) fdatabase;;
     "start"     ) fstart;;
     "stop"      ) fstop;;
     "status"    ) fstatus;;
