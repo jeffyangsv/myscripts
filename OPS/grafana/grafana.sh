@@ -243,7 +243,7 @@ fcli(){
         #查看插件命令 $AppProgCli plugins list-remote 
         PluginName=`$AppProgCli plugins list-remote | grep "$1"| awk '{print $2}'`
 	if [ $PluginName ];then
-	    $AppProgCli plugins install  $PluginName &>/dev/null  && [ $? -eq 0 ]  && mv /var/lib/grafana/plugins/$PluginName $AppPluginsDir/ &>/dev/null  && echo "$AppName $PluginName 插件下载成功"|| echo "$AppName $PluginName 已存在" && frestart &>/dev/null
+	    $AppProgCli plugins install  $PluginName &>/dev/null  && [ $? -eq 0 ]  && mv /var/lib/grafana/plugins/$PluginName $AppPluginsDir/ &>/dev/null  && echo "$AppName $PluginName 插件下载成功"  && frestart &>/dev/null || echo "$AppName $PluginName 已存在" && rm -rf /var/lib/grafana/plugins/$PluginName
         else
 	    echo "$AppName 不支持${PluginName}插件,支持的插件有:"
 	    $AppProgCli plugins list-remote 
