@@ -238,20 +238,21 @@ frestart()
 # 插件安装
 fcli(){
     fpid
-     Plugin=$1
     if [ -n "$AppMasterPid" ]; then
-        #$AppProgCli plugins list-remote 
-	if [ $Plugin ];then
-		$AppProgCli plugins install  $($AppProgCli plugins list-remote | grep "$Plugin"| awk '{print $2}')  &>/dev/null && [ $? -eq 0 ]  && mv /var/lib/grafana/plugins/* $AppPluginsDir/ && frestart &>/dev/null &&  echo "$AppName $Plugin 插件下载成功"|| echo "$AppName  没有${Plugin}插件"
+	#grafana-cli plugins install  $(grafana-cli plugins list-remote | grep zabbix | awk '{print $2}')
+        #查看插件命令 $AppProgCli plugins list-remote 
+        PluginName=`$AppProgCli plugins list-remote | grep "$1"| awk '{print $2}'`
+	if [ $PluginName ];then
+	    $AppProgCli plugins install  $PluginName &>/dev/null  && [ $? -eq 0 ]  && mv /var/lib/grafana/plugins/$PluginName $AppPluginsDir/ &>/dev/null  && echo "$AppName $PluginName 插件下载成功"|| echo "$AppName $PluginName 已存在" && frestart &>/dev/null
         else
-                echo "$AppName支持的插件:" 
-		$AppProgCli plugins list-remote 
+	    echo "$AppName 不支持${PluginName}插件,支持的插件有:"
+	    $AppProgCli plugins list-remote 
         fi
     else
         echo "$AppName 未启动"
     fi
-	#grafana-cli plugins install  $(grafana-cli plugins list-remote | grep zabbix | awk '{print $2}')
 }
+
 
 ScriptDir=$(cd $(dirname $0); pwd)
 ScriptFile=$(basename $0)
