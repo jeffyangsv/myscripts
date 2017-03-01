@@ -33,7 +33,7 @@ MysqlUser=root
 MysqlPass=123456 
 MysqlProg=/usr/bin/mysql
 MysqlSock=/var/lib/mysql/mysql.sock
-
+#wget -O  $AppSrcBase/grafana-4.1.2-1486989747.linux-x64.tar.gz https://grafanarel.s3.amazonaws.com/builds/grafana-4.1.2-1486989747.linux-x64.tar.gz
 RemoveFlag=0
 InstallFlag=0
 
