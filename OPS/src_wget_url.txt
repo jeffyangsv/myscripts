@@ -10,3 +10,9 @@ cd grafana-4.1.2-1486989747
 cp conf/sample.ini conf/custom.ini
 #  make changes to conf/custom.ini then start grafana-server
 ./bin/grafana-server
+
+4.influxdb & telegraf
+wget https://dl.influxdata.com/influxdb/releases/influxdb-1.2.0_linux_amd64.tar.gz
+tar xvfz influxdb-1.2.0_linux_amd64.tar.gz
+wget https://dl.influxdata.com/telegraf/releases/telegraf-1.2.1_linux_amd64.tar.gz
+tar xvfz telegraf-1.2.1_linux_amd64.tar.gz
