@@ -23,6 +23,11 @@ AppBuildDir=$(echo "$AppBuildBase/$AppTarBall" | sed -e 's/.linux.*$//' -e 's/^.
 AppProg=$AppInstallDir/mysqld_exporter
 AppConf=$AppInstallDir/.my.cnf
 
+MysqlIp=localhost
+MysqlUser=root
+MysqlPass=123456
+MysqlProg=/usr/bin/mysql
+MysqlSock=/tmp/mysql_3306.sock
 
 RemoveFlag=0
 InstallFlag=0
@@ -146,19 +151,25 @@ fcpconf()
 }
 
 # 配置连接到Mysql的权限
-fmysql()
+fdatabase()
 {
-MysqlConn="mysql -uroot -p123456"
-GrantPW="GRANT REPLICATION CLIENT, PROCESS ON *.* TO 'prom'@'localhost' identified by 'abc123';"
-GrantSel="GRANT SELECT ON performance_schema.* TO 'prom'@'localhost';"
-$MysqlConn -e "$GrantPW"
-$MysqlConn -e "$GrantSel"
-[ $? -eq 0 ] && echo "$AppName 配置成功" || echo "$AppName 配置失败"
-cat << EOF > $AppConf
+    MysqlPid=$(ps ax | grep -w "mysqld" | grep -v "grep" | awk '{print $1}' 2> /dev/null)
+    if [ -n "MysqlPid" ];then
+        MysqlConn="$MysqlProg -h$MysqlIp -u$MysqlUser -p$MysqlPass -S $MysqlSock"
+
+        GrantPW="GRANT REPLICATION CLIENT, PROCESS ON *.* TO 'prom'@'localhost' identified by 'abc123';"
+        GrantSel="GRANT SELECT ON performance_schema.* TO 'prom'@'localhost';"
+        $MysqlConn -e "$GrantPW"
+        $MysqlConn -e "$GrantSel"
+        [ $? -eq 0 ] && echo "$AppName 配置成功" || echo "$AppName 配置失败"
+        cat << EOF > $AppConf
 [client]
 user=prom
 password=abc123
 EOF
+    else
+        echo "mysql 数据库未启动" 
+    fi
 }
 
 # 启动
@@ -223,7 +234,7 @@ case "$1" in
     "status"    ) fstatus;;
     "restart"   ) frestart;;
     "kill"      ) fkill;;
-    "setmysql"  ) fmysql;;
+    "database"  ) fdatabase;;
     *           )
     echo "$ScriptFile install              安装 $AppName"
     echo "$ScriptFile update               更新 $AppName"
@@ -234,7 +245,7 @@ case "$1" in
     echo "$ScriptFile status               状态 $AppName"
     echo "$ScriptFile stop                 停止 $AppName"
     echo "$ScriptFile restart              重启 $AppName"
-    echo "$ScriptFile setmysql             配置连接MySQL $AppName"
+    echo "$ScriptFile database             配置连接MySQL $AppName"
     echo "$ScriptFile kill                 终止 $AppName 进程"
     ;;
 esac
