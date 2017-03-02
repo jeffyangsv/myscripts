@@ -1,6 +1,6 @@
 #/bin/bash
 ##################################################
-#Name:        prometheus.sh
+#Name:        prometheus_local.sh
 #Version:     v1.5.2
 #Create_Date: 2017-2-23
 #Author:      GuoLikai(glk73748196@sina.com)
