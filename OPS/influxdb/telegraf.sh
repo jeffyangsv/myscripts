@@ -8,7 +8,6 @@
 #The plugin-driven server agent for reporting metrics into InfluxDB
 #用于采集系统数据(system，docker，redis，nginx，kafka等)监控指标
 ##########################################################################
-
 App=telegraf-1.2.1_linux_amd64
 AppName=telegraf
 AppOptBase=/App/opt/OPS
@@ -27,6 +26,12 @@ AppConf=$AppInstallDir/etc/$AppName/$AppName.conf
 AppDataBase=/App/data
 AppDataDir=/App/data/OPS/$AppName
 
+InfluxdbHost=172.16.1.20
+InfluxdbUser=admin
+InfluxdbPass=admin 
+DockerIpPort=172.16.1.200:8080
+RedisIpPort=172.16.1.20:6379
+    
 RemoveFlag=0
 InstallFlag=0
 
@@ -65,6 +70,7 @@ fremove()
             rm -rf $AppConfDir
             rm -rf $AppOptDir
             rm -rf $AppLogDir
+	    rm -rf "/usr/bin/$AppName"
         else
             echo "$AppName 未安装"
         fi
@@ -131,29 +137,30 @@ fsymlink()
     [ -L $AppLogDir ] && rm -f $AppLogDir
 
     ln -s $AppInstallDir  $AppOptDir
+    ln -s $AppProg /usr/bin/
 }
 
 # 拷贝配置
 fcpconf()
 { 
     mkdir -p $AppConfDir/$AppName.d   &>/dev/null
+    mkdir -p $AppLogDir   &>/dev/null
     #/App/install/OPS/telegraf/usr/bin/telegraf -sample-config -input-filter cpu:mem -output-filter influxdb > /App/conf/OPS/telegraf/telegraf.conf
-    $AppProg -sample-config -input-filter cpu:mem -output-filter influxdb > $AppConfDir/$AppName.conf
+    #$AppProg -sample-config -input-filter cpu:mem -output-filter influxdb > $AppConfDir/$AppName.conf
+    $AppProg -sample-config -input-filter cpu:mem:kernel:processes:swap:system:net:netstat -output-filter influxdb > $AppConfDir/$AppName.conf
 }
 
 fdatabase()
 {
     InfluxdbPid=$(ps ax | grep "influxd" | grep -v "grep" | awk '{print $1}' 2> /dev/null)
-    AdminUser=admin
-    AdminPass=admin 
-    InfluxConn="influx -username $AdminUser -password $AdminPass"
+    InfluxConn="influx -host $InfluxdbHost -username $InfluxdbUser -password $InfluxdbUser"
     if [ -n "$InfluxdbPid" ];then 
-	Result=$($InfluxConn -execute "show databases" | grep -w "telegraf" | wc -l)
+	Result=$($InfluxConn -execute "show databases" | grep -w "prometheus" | wc -l)
 	if [ $Result -eq 0 ];then
- 	    $InfluxConn -execute "create database telegraf" 
-            $InfluxConn -execute "create user "telegraf" with password 'telegraf'" 
-            $InfluxConn -execute "GRANT ALL ON telegraf TO telegraf" && echo "$AppName 数据库创建授权成功"
-	#influx -username telegraf -password telegraf  -database telegraf  #访问数据库命令
+ 	    $InfluxConn -execute "create database $AppName" 
+            $InfluxConn -execute "create user "$AppName" with password '$AppName'" 
+            $InfluxConn -execute "GRANT ALL ON $AppName TO $AppName" && echo "$AppName 数据库创建授权成功"
+	#influx -host localhost -username prometheus -password prometheus  -database prometheus  #访问数据库命令
 	else 
 	    echo "$AppName 数据库已存在" 
 	fi
@@ -166,40 +173,31 @@ fdatabase()
 # 修改配置
 fsetconf()
 {
-    DockerIpPort=192.168.30.191:8080
-    RedisIpPort=172.16.1.20:6379
-    InfluxdbIp=172.16.1.20
+
     Result=$(grep "inputs.disk" $AppConfDir/$AppName.conf | wc -l) 	 
     if [ $Result -eq 0 ];then
-        sed -i '/^  # dc/s/\#.*/dc = "docker-test"/'	    	$AppConfDir/$AppName.conf
+        sed -i '/^  # dc/s/\#.*/dc = "docker-host"/'	    	$AppConfDir/$AppName.conf
         sed -i '/^  # username = "telegraf"/s/# //'  	    	$AppConfDir/$AppName.conf
         sed -i '/^  # password/s/\#.*/password = "telegraf"/'   $AppConfDir/$AppName.conf
-        sed -i "/^  urls = \[/s/localhost/${InfluxdbIp}/"	$AppConfDir/$AppName.conf
+        sed -i "/^  urls = \[/s/localhost/${InfluxdbHost}/"	$AppConfDir/$AppName.conf
+	sed -i '/^  logfile/s#=.*#= "'$AppLogDir/${AppName}.log'"#' /App/conf/OPS/telegraf/telegraf.conf
         echo '[[inputs.disk]]
-#默认的telegraf将手机所有挂载点的信息
-#下面这个参数可以指定挂载点
   mount_points = ["/"]
-#仅存储磁盘inode相关的度量值
   fieldpass = ["inodes*"]
-#通过文件系统类型来忽略一些挂载点，比如tmpfs
   ignore_fs = ["tmpfs", "devtmpfs"]
-#仅存储tagpass相关的信息
 [inputs.disk.tagpass]
   fstype = [ "ext4", "xfs" ]
   path = [ "/export", "/home*" ]
-#默认telegraf将采集所有存储设备的信息，devices参数可以指定
-# devices = ["sda", "sdb"]
-#如果需要磁盘的串行号可以将下面注释打开
-# skip_serial_number = false
-#[[inputs.mem]]
-#采集docker和redis的插件
 [[inputs.docker]]
-#指定docker启动的api接口，并指定需要采集那些容器指标
   endpoint = "tcp://'$DockerIpPort'"
   container_names = []
-[[inputs.redis]]
+  timeout = "5s"
+  perdevice = true
+  total = false'  
 #指定redis的相关接口
-  #servers = ["tcp://'$RedisIpPort'"] '  >>  $AppConfDir/$AppName.conf
+  #[[inputs.redis]]
+  #servers = ["tcp://'$RedisIpPort'"]
+'  >>  $AppConfDir/$AppName.conf
     	else
              echo "$AppName 已配置" 
     fi
@@ -214,7 +212,7 @@ fstart()
         echo "$AppName 正在运行"
     else
 	#/App/install/OPS/telegraf/usr/bin/telegraf -config /App/conf/OPS/telegraf/telegraf.conf
-	$AppProg -config "$AppConfDir/$AppName.conf"  -config-directory $AppConfDir/$AppName.d &>/dev/null &
+	$AppProg -config "$AppConfDir/$AppName.conf" -config-directory $AppConfDir/$AppName.d   &>/dev/null &
 	[ $? -eq 0 ] && echo "$AppName 启动成功" || echo "$AppName 启动失败"
     fi
 } 
