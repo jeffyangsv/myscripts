@@ -194,8 +194,8 @@ fsetconf()
   timeout = "5s"
   perdevice = true
   total = false'  
+#[[inputs.redis]]
 #指定redis的相关接口
-  #[[inputs.redis]]
   #servers = ["tcp://'$RedisIpPort'"]
 '  >>  $AppConfDir/$AppName.conf
     	else
