@@ -13,8 +13,8 @@ AppOptBase=/App/opt/OPS
 AppOptDir=$AppOptBase/$AppName
 AppInstallBase=/App/install/OPS
 AppInstallDir=$AppInstallBase/$App
-AppConfBase=/App/conf/OPS/
-AppConfDir=/App/conf/OPS/$AppName
+AppConfBase=/App/conf/OPS
+AppConfDir=$AppConfBase/$AppName
 AppLogDir=/App/log/OPS/$AppName
 AppSrcBase=/App/src/OPS
 AppTarBall=$App-1486989747.linux-x64.tar.gz
@@ -154,21 +154,21 @@ fsymlink()
 fcpconf()
 { 
     cp  $AppConfDir/defaults.ini  $AppConfDir/${AppName}.ini
-    sed -i "/^logs/clogs = $AppLogDir"   				      	                  $AppConfDir/${AppName}.ini
-    sed -i "/^data = data/cdata = $AppDataDir"   				                  $AppConfDir/${AppName}.ini
-    sed -i "/^plugins/cplugins = $AppPluginsDir"   			                  $AppConfDir/${AppName}.ini
-    sed -i '/\[dashboards.json\]/{n;s#false#true#}'  		                  $AppConfDir/${AppName}.ini
+    sed -i "/^logs/clogs = $AppLogDir"   				      	$AppConfDir/${AppName}.ini
+    sed -i "/^data = data/cdata = $AppDataDir"   				$AppConfDir/${AppName}.ini
+    sed -i "/^plugins/cplugins = $AppPluginsDir"   			        $AppConfDir/${AppName}.ini
+    sed -i '/\[dashboards.json\]/{n;s#false#true#}'  		                $AppConfDir/${AppName}.ini
     sed -i "/\[dashboards.json\]/{n;n;s#/var/lib/grafana#$AppDataDir#}"  	$AppConfDir/${AppName}.ini
 }
 #修改数据库相关配置
 
 fmysqlconf(){
     if [ $(grep "type = mysql" $AppConfDir/${AppName}.ini | wc -l) -eq 0 ];then
-       sed -i '/^type = sqlite3/ctype = mysql'   		                    $AppConfDir/${AppName}.ini
-       sed -i "/^host = 127.0.0.1:3306/chost =$MysqlIp:3306" 	          $AppConfDir/${AppName}.ini
-       sed -i '/^name = grafana/cname = grafana'   		                  $AppConfDir/${AppName}.ini
-       sed -i '/^user = root/cuser = grafana'     	                    $AppConfDir/${AppName}.ini
-       sed -i '/^password =/cpassword = grafana'   		                  $AppConfDir/${AppName}.ini
+       sed -i '/^type = sqlite3/ctype = mysql'   		                 $AppConfDir/${AppName}.ini
+       sed -i "/^host = 127.0.0.1:3306/chost =$MysqlIp:3306" 	          	 $AppConfDir/${AppName}.ini
+       sed -i '/^name = grafana/cname = grafana'   		                 $AppConfDir/${AppName}.ini
+       sed -i '/^user = root/cuser = grafana'     	                    	 $AppConfDir/${AppName}.ini
+       sed -i '/^password =/cpassword = grafana'   		                 $AppConfDir/${AppName}.ini
     else 
        echo "$AppName 配置文件已修改" 
    fi 
@@ -201,7 +201,7 @@ fstart()
         echo "$AppName 正在运行"
     else
         #$AppProg -config=$AppConfDir/${AppName}.ini -homepath=$AppInstallDir 
-        $AppProg -config=$AppConfDir/${AppName}.ini -homepath=$AppInstallDir -pidfile=$AppPidFile  cfg:default.paths.logs=$AppLogDir cfg:default.paths.data=$AppDataDir cfg:default.paths.plugins=$AppPluginsDir &>/dev/null &
+        $AppProg -config=$AppConfDir/${AppName}.ini -homepath=$AppOptDir -pidfile=$AppPidFile  cfg:default.paths.logs=$AppLogDir cfg:default.paths.data=$AppDataDir cfg:default.paths.plugins=$AppPluginsDir &>/dev/null &
 	      sleep 0.1
         if [ -n "$(ps ax | grep "$AppName" | grep -v "grep" | awk '{print $1}' 2> /dev/null)" ]; then
            echo "$AppName 启动成功" 
@@ -280,14 +280,14 @@ case "$1" in
     "status"    ) fstatus;;
     "restart"   ) frestart;;
     "kill"      ) fkill;;
-    "cli"	      ) fcli $2;;
+    "cli"	) fcli $2;;
     *           )
     echo "$ScriptFile install              安装 $AppName"
     echo "$ScriptFile update               更新 $AppName"
     echo "$ScriptFile reinstall            重装 $AppName"
     echo "$ScriptFile remove               删除 $AppName"
     echo "$ScriptFile backup               备份 $AppName"
-    echo "$ScriptFile mysqld               配置 $AppName"
+    echo "$ScriptFile mysqld               配置MySQL $AppName"
     echo "$ScriptFile start                启动 $AppName"
     echo "$ScriptFile status               状态 $AppName"
     echo "$ScriptFile stop                 停止 $AppName"
