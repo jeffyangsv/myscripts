@@ -7,40 +7,40 @@
 #Description: "Grafana一键部署启动脚本"
 ##################################################
 
-App=grafana-4.1.2-1486989747.linux-x64
+App=grafana-4.1.2
 AppName=grafana
 AppOptBase=/App/opt/OPS
 AppOptDir=$AppOptBase/$AppName
 AppInstallBase=/App/install/OPS
-AppInstallDir=$AppInstallBase/$AppName
+AppInstallDir=$AppInstallBase/$App
 AppConfBase=/App/conf/OPS/
 AppConfDir=/App/conf/OPS/$AppName
 AppLogDir=/App/log/OPS/$AppName
 AppSrcBase=/App/src/OPS
-AppTarBall=$App.tar.gz
+AppTarBall=$App-1486989747.linux-x64.tar.gz
 AppBuildBase=/App/build/OPS
 AppBuildDir=$(echo "$AppBuildBase/$AppTarBall" | sed -e 's/.linux.*$//' -e 's/^.\///')
-AppProg=$AppInstallDir/bin/grafana-server
-AppProgCli=$AppInstallDir/bin/grafana-cli
-AppConf=$AppInstallDir/conf/$AppName.ini
+AppProg=$AppOptDir/bin/grafana-server
+AppProgCli=$AppOptDir/bin/grafana-cli
+AppConf=$AppLogDir/$AppName.ini
 
 AppDataDir=/App/data/OPS/$AppName
 AppPluginsDir=$AppDataDir/plugins
-AppPidFile=$AppDataDir/$AppName.pid
+AppPidFile=$AppLogDir/$AppName.pid
 
-MysqlIp=172.16.1.100
+MysqlIp=localhost
 MysqlUser=root
 MysqlPass=123456 
 MysqlProg=/usr/bin/mysql
 MysqlSock=/var/lib/mysql/mysql.sock
-#wget -O  $AppSrcBase/grafana-4.1.2-1486989747.linux-x64.tar.gz https://grafanarel.s3.amazonaws.com/builds/grafana-4.1.2-1486989747.linux-x64.tar.gz
+
 RemoveFlag=0
 InstallFlag=0
 
 # 获取PID
 fpid()
 {
-    AppMasterPid=$(ps ax | grep "grafana" | grep -v "grep" | awk '{print $1}' 2> /dev/null)
+    AppMasterPid=$(ps ax | grep "$AppName" | grep -v "grep" | awk '{print $1}' 2> /dev/null)
 }
 
 # 查询状态
@@ -122,9 +122,8 @@ fupdate()
     [ $InstallFlag -eq 1 ] && Operate="安装"
     [ $RemoveFlag -ne 1 ] && fbackup
     test -d "$AppBuildDir" && rm -rf $AppBuildDir
-    useradd -s /sbin/nologin grafana  &>/dev/null
+    useradd -s /sbin/nologin grafana
     mkdir -p $AppPluginsDir
-    mkdir -p $AppConfDir
     mkdir -p $AppLogDir
     mkdir -p $AppDataDir/dashboards
     chown -R grafana:grafana $AppPluginsDir
@@ -132,7 +131,7 @@ fupdate()
 
     tar zxf $AppSrcBase/$AppTarBall -C $AppBuildBase || tar jxf $AppSrcBase/$AppTarBall -C $AppBuildBase
     cp -rp $AppBuildDir $AppInstallDir
-    cp $AppInstallDir/conf/defaults.ini $AppConf
+    #cp $AppInstallDir/conf/defaults.ini  $AppInstallDir/conf/${AppName}.ini
     if [ $? -eq 0 ]; then
         echo "$AppName $Operate成功"
     else
@@ -148,38 +147,47 @@ fsymlink()
     [ -L $AppConfDir ] && rm -f $AppConfDir
     [ -L $AppLogDir ] && rm -f $AppLogDir
     ln -s $AppInstallDir $AppOptDir
+    ln -s $AppInstallDir/conf $AppConfDir
 }
 
 # 拷贝配置
 fcpconf()
 { 
-    ln -s $AppConf  $AppConfDir/
-	sed -i "/^logs/clogs = $AppLogDir"   					$AppConfDir/$AppName.ini
-	sed -i "/^data = data/cdata = $AppDataDir"   				$AppConfDir/$AppName.ini
-	sed -i "/^plugins/cplugins = $AppPluginsDir"   				$AppConfDir/$AppName.ini
-	sed -i '/\[dashboards.json\]/{n;s#false#true#}'  			$AppConfDir/$AppName.ini
-	sed -i "/\[dashboards.json\]/{n;n;s#/var/lib/grafana#$AppDataDir#}"  	$AppConfDir/$AppName.ini
+    cp  $AppConfDir/defaults.ini  $AppConfDir/${AppName}.ini
+    sed -i "/^logs/clogs = $AppLogDir"   				      	                  $AppConfDir/${AppName}.ini
+    sed -i "/^data = data/cdata = $AppDataDir"   				                  $AppConfDir/${AppName}.ini
+    sed -i "/^plugins/cplugins = $AppPluginsDir"   			                  $AppConfDir/${AppName}.ini
+    sed -i '/\[dashboards.json\]/{n;s#false#true#}'  		                  $AppConfDir/${AppName}.ini
+    sed -i "/\[dashboards.json\]/{n;n;s#/var/lib/grafana#$AppDataDir#}"  	$AppConfDir/${AppName}.ini
+}
+#修改数据库相关配置
+
+fmysqlconf(){
+    if [ $(grep "type = mysql" $AppConfDir/${AppName}.ini | wc -l) -eq 0 ];then
+       sed -i '/^type = sqlite3/ctype = mysql'   		                    $AppConfDir/${AppName}.ini
+       sed -i "/^host = 127.0.0.1:3306/chost =$MysqlIp:3306" 	          $AppConfDir/${AppName}.ini
+       sed -i '/^name = grafana/cname = grafana'   		                  $AppConfDir/${AppName}.ini
+       sed -i '/^user = root/cuser = grafana'     	                    $AppConfDir/${AppName}.ini
+       sed -i '/^password =/cpassword = grafana'   		                  $AppConfDir/${AppName}.ini
+    else 
+       echo "$AppName 配置文件已修改" 
+   fi 
 }
 
-# 配置Mysql数据库存储
-fdatabase()
+# 配置MySQL数据库存储
+fmysqld()
 {
     MysqlPid=$(ps ax | grep -w "mysqld" | grep -v "grep" | awk '{print $1}' 2> /dev/null)
     MysqlConn="$MysqlProg -h$MysqlIp -u$MysqlUser -p$MysqlPass -S $MysqlSock"
     if [ -n "MysqlPid" ];then 
-	Result=$($MysqlConn -e "show databases" | grep -w "grafana" | wc -l)
-		if [ $Result -eq 0 ];then
-			$MysqlConn -e "create database if not exists grafana default character set utf8;" && \
-			$MysqlConn -e "grant all on grafana.* to 'grafana'@'$MysqlIp' identified by 'grafana';" && \
-			$MysqlConn -e "flush privileges"  && echo "$AppName 数据库创建授权成功"
-			sed -i '/^type = sqlite3/ctype = mysql'   			$AppConfDir/$AppName.ini
-			sed -i "/^host = 127.0.0.1:3306/chost =$MysqlIp:3306" 		$AppConfDir/$AppName.ini
-			sed -i '/^name = grafana/cname = grafana'   			$AppConfDir/$AppName.ini
-			sed -i '/^user = root/cuser = grafana'     			$AppConfDir/$AppName.ini
-			sed -i '/^password =/cpassword = grafana'   			$AppConfDir/$AppName.ini
-		else 
-			echo "$AppName 数据库已存在" 
-		fi
+      if [ $($MysqlConn -e "show databases" | grep -w "grafana" | wc -l) -eq 0 ];then
+        $MysqlConn -e "create database if not exists $AppName default character set utf8;" && \
+        $MysqlConn -e "grant all on $AppName.* to '$AppName'@'$MysqlIp' identified by '$AppName';"  &&  \
+        $MysqlConn -e "grant all on $AppName.* to '$AppName'@'%' identified by '$AppName';" && \
+        $MysqlConn -e "flush privileges"  && echo "$AppName 数据库创建授权成功"  && fmysqlconf
+      else 
+        echo "$AppName 数据库已存在"  && fmysqlconf 
+      fi
     else
         echo "mysql 数据库未启动" 
     fi
@@ -192,9 +200,14 @@ fstart()
     if [ -n "$AppMasterPid" ]; then
         echo "$AppName 正在运行"
     else
-        #$AppProg -config=$AppConfDir/$AppName.ini -homepath=$AppInstallDir 
-        $AppProg -config=$AppConfDir/$AppName.ini -homepath=$AppInstallDir -pidfile=$AppPidFile  cfg:default.paths.logs=$AppLogDir cfg:default.paths.data=$AppDataDir cfg:default.paths.plugins=$AppPluginsDir &>/dev/null &
-	 [ $? -eq 0 ] && echo "$AppName 启动成功" || echo "$AppName 启动失败"
+        #$AppProg -config=$AppConfDir/${AppName}.ini -homepath=$AppInstallDir 
+        $AppProg -config=$AppConfDir/${AppName}.ini -homepath=$AppInstallDir -pidfile=$AppPidFile  cfg:default.paths.logs=$AppLogDir cfg:default.paths.data=$AppDataDir cfg:default.paths.plugins=$AppPluginsDir &>/dev/null &
+	      sleep 0.1
+        if [ -n "$(ps ax | grep "$AppName" | grep -v "grep" | awk '{print $1}' 2> /dev/null)" ]; then
+           echo "$AppName 启动成功" 
+        else
+           echo "$AppName 启动失败"
+        fi
     fi
 } 
 
@@ -243,16 +256,15 @@ fcli(){
         #查看插件命令 $AppProgCli plugins list-remote 
         PluginName=`$AppProgCli plugins list-remote | grep "$1"| awk '{print $2}'`
 	if [ $PluginName ];then
-	    $AppProgCli plugins install  $PluginName &>/dev/null  && [ $? -eq 0 ]  && mv /var/lib/grafana/plugins/$PluginName $AppPluginsDir/ &>/dev/null  && echo "$AppName $PluginName 插件下载成功"  && frestart &>/dev/null || echo "$AppName $PluginName 已存在" && rm -rf /var/lib/grafana/plugins/$PluginName
+	    $AppProgCli plugins install  $PluginName &>/dev/null  && [ $? -eq 0 ]  && mv /var/lib/grafana/plugins/$PluginName $AppPluginsDir/ &>/dev/null  && echo "$AppName $PluginName 插件下载成功" && frestart &>/dev/null || echo "$AppName $PluginName 插件已存在" && rm -rf /var/lib/grafana/plugins/$PluginName
         else
-	    echo "$AppName 不支持${PluginName}插件,支持的插件有:"
+	    echo "$AppName 不支持${1}插件,支持的插件有:"
 	    $AppProgCli plugins list-remote 
         fi
     else
         echo "$AppName 未启动"
     fi
 }
-
 
 ScriptDir=$(cd $(dirname $0); pwd)
 ScriptFile=$(basename $0)
@@ -262,20 +274,20 @@ case "$1" in
     "reinstall" ) fremove && finstall;;
     "remove"    ) fremove;;
     "backup"    ) fbackup;;
-    "database"  ) fdatabase;;
+    "mysqld"    ) fmysqld;;
     "start"     ) fstart;;
     "stop"      ) fstop;;
     "status"    ) fstatus;;
     "restart"   ) frestart;;
     "kill"      ) fkill;;
-    "cli"	) fcli $2;;
+    "cli"	      ) fcli $2;;
     *           )
     echo "$ScriptFile install              安装 $AppName"
     echo "$ScriptFile update               更新 $AppName"
     echo "$ScriptFile reinstall            重装 $AppName"
     echo "$ScriptFile remove               删除 $AppName"
     echo "$ScriptFile backup               备份 $AppName"
-    echo "$ScriptFile database             配置 $AppName"
+    echo "$ScriptFile mysqld               配置 $AppName"
     echo "$ScriptFile start                启动 $AppName"
     echo "$ScriptFile status               状态 $AppName"
     echo "$ScriptFile stop                 停止 $AppName"
