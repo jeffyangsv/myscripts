@@ -9,13 +9,17 @@
 
 IP=172.16.1.100
 GATEWAY=172.16.1.2
+OLDNAME1=em33
+OLDNAME2=em34
 ETH0=eth0
 ETH1=eth1
 #1.网卡设备名修改
-
-mv /etc/sysconfig/network-scripts/ifcfg-em1{,.bak}
-mv /etc/sysconfig/network-scripts/ifcfg-em2{,.bak}
-
+if [ -f /etc/sysconfig/network-scripts/ifcfg-$OLDNAME1 ];then
+    mv /etc/sysconfig/network-scripts/ifcfg-$OLDNAME1 /etc/sysconfig/network-scripts/ifcfg-$ETH0
+fi
+if [ -f /etc/sysconfig/network-scripts/ifcfg-$OLDNAME2 ];then
+    mv /etc/sysconfig/network-scripts/ifcfg-$OLDNAME2 /etc/sysconfig/network-scripts/ifcfg-$ETH0
+fi 
 if [ -f /etc/sysconfig/network-scripts/ifcfg-$ETH0 ];then 
     cp /etc/sysconfig/network-scripts/ifcfg-$ETH0{,.bak}
     echo "TYPE=Ethernet
