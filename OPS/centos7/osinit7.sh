@@ -1,3 +1,72 @@
+#!/bin/bash
+##################################################
+#Name:        osinit7.sh
+#Version:     v1.0
+#Create_Date：2017-4-3
+#Author:      GuoLikai(glk73748196@sina.com)
+#ISO:		  CentOS-7-x86_64-Minimal-1611.iso
+#Description: "脚本适用于Centos7的系统服务优化"
+##################################################
+
+cat << EOF
++--------------------------------------------------------------+
+|          === Welcome to CentOS 7.x System init ===           |
++--------------------------------------------------------------+
++---------------------------by GuoLikai--------------------------+
+EOF
+
+# 添加dns
+cat >> /etc/resolv.conf << EOF
+nameserver 202.106.0.20
+nameserver 223.5.5.5
+EOF
+
+#关闭selinux和防火墙
+sed -i '/SELINUX/s/enforcing/disabled/' /etc/selinux/config
+setenforce 0
+systemctl stop firewalld.service
+systemctl disable firewalld.service
+
+# 安装基础应用
+yum -y --skip-broken install ntp ntpdate screen wget curl curl-devel
+
+# 创建基础文件夹
+mkdir -p /App/script/{SRT,OPS} /App/src/{SRT,OPS} /App/build/{SRT,OPS} /App/install/{SRT,OPS} /App/conf/{SRT,OPS} /App/log/{SRT,OPS} /App/opt/{SRT,OPS} /App/mnt/{UGC,RES} /App/data /App/backup/{HOST,SRT,OPS}
+# 换repo源
+mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bak
+#sed -i "/gpgcheck=1/cgpgcheck=0" /etc/yum.repos.d/*.repo
+wget http://mirrors.aliyun.com/repo/epel.repo -O /etc/yum.repos.d/epel.repo
+wget http://mirrors.aliyun.com/repo/Centos-7.repo -O /etc/yum.repos.d/CentOS-Base.repo
+wget http://mirrors.163.com/.help/CentOS7-Base-163.repo -O /etc/yum.repos.d/epel-163.repo
+
+# 安装插件
+yum -y  groupinstall "开发工具"
+yum -y --skip-broken install gcc vim vim-enhanced xz iftop sysstat dstat htop iotop lrzsz tree telnet dos2unix  net-tools   unzip sudo
+yum -y install python-simplejson libselinux-python
+
+
+# set ntp
+echo "#time sync"  >> /var/spool/cron/root
+echo "0 * * * * /usr/sbin/ntpdate time.nist.gov > /dev/null 2>&1" >> /var/spool/cron/root
+systemctl restart crond
+
+# set ulimit
+echo "ulimit -SHn 102400" >> /etc/rc.local
+cat >> /etc/security/limits.conf << EOF
+*           soft   nofile       102400
+*           hard   nofile       102400
+*           soft   nproc        102400
+*           hard   nproc        102400
+EOF
+
+# set ssh
+sed -i 's/^GSSAPIAuthentication yes$/GSSAPIAuthentication no/' /etc/ssh/sshd_config
+sed -i 's/#UseDNS yes/UseDNS no/' /etc/ssh/sshd_config
+#sed -i 's/#Port 22/Port 6343/' /etc/ssh/sshd_config
+service sshd restart
+
+# set sysctl
+true > /etc/sysctl.conf
 cat >> /etc/sysctl.conf << EOF
 net.ipv4.ip_forward = 0
 net.ipv4.conf.default.rp_filter = 1
@@ -31,71 +100,12 @@ net.ipv4.tcp_mem = 94500000 915000000 927000000
 net.ipv4.tcp_fin_timeout = 1
 net.ipv4.tcp_keepalive_time = 1200
 net.ipv4.ip_local_port_range = 25000 65535
-vm.swappiness = 1
-kernel.hung_task_timeout_secs = 0
-vm.dirty_background_ratio = 5
-vm.dirty_ratio = 10
-vm.overcommit_memory = 1
 EOF
-sysctl -p
+/sbin/sysctl -p
+echo "sysctl set OK!!"
 
-cat >> /etc/security/limits.conf << EOF
-*           soft   nofile       102400
-*           hard   nofile       102400
-*           soft   nproc        102400
-*           hard   nproc        102400
-EOF
-
-cat >> /etc/profile << EOF
-ulimit -SHn 102400
-alias grep='grep --color=auto'
-export HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S "
-EOF
-
-sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
-setenforce 0
-
-#cat >> /etc/resolv.conf << EOF
-#nameserver 192.168.90.1 
-#nameserver 192.168.10.8
-#EOF
-
-systemctl restart network
-
-sed -i 's/.*UseDNS yes/UseDNS no/' /etc/ssh/sshd_config
-sed -i 's/.*GSSAPIAuthentication yes/GSSAPIAuthentication no/' /etc/ssh/sshd_config
-systemctl restart sshd
-
-
-mkdir -p /App/script/{SRT,OPS} /App/src/{SRT,OPS} /App/build/{SRT,OPS} /App/install/{SRT,OPS} /App/conf/{SRT,OPS} /App/log/{SRT,OPS} /App/opt/{SRT,OPS} /App/mnt/{UGC,RES} /App/data /App/backup/HOST
-
-mount --bind /dev/shm /tmp
-echo "/bin/mount --bind /dev/shm /tmp" >> /etc/rc.local
-#yum -y --skip-broken install wget
-
-#mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bak
-#wget http://mirrors.aliyun.com/repo/Centos-7.repo -O /etc/yum.repos.d/CentOS-Base.repo
-rpm -ivh http://mirrors.aliyun.com/epel/epel-release-latest-7.noarch.rpm
-
-yum -y --skip-broken install ntpdate screen wget rsync curl gcc vim-enhanced xz iftop sysstat dstat htop iotop lrzsz
-
-cat > /var/spool/cron/root << EOF
-0  *  *  *  *  /usr/sbin/ntpdate time.nist.gov &> /dev/null
-EOF
-
-#wget http://192.168.10.6/vim/molokai.vim -O /usr/share/vim/vim74/colors/molokai.vim
-#wget -r http://192.168.10.6/zabbix_init/ -O /App/src/OPS/
-#wget http://192.168.10.6/ipinit7.sh -O /App/script/OPS/ipinit.sh
-
-#mkdir -p /root/.ssh
-#echo 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAxWNKngBgnhFsNgNLb1gmo99UwUvBxQU4qIJtrAOM5c+uf1FJXoeWyXp7oHEBcGjCPI9C/lQ6gJLKhz59TeondyNfBC6YzEqdwmOxNChm8UwpuiZlyNQz3KzFgZOvxXiqnq6iKgVQrKh/V4d4mroqojVu2i19e3CAfbgwom4uosHsD4uMZlqJ5Z7/LI/ZymVOphzR1tgBAhA25dlxa0gJOMEKfYjFUG7SFMVKWJfzKdL2g2UsjzRUWBxHdnyFyt3hMXThLsAF+gBv5KqMjVXfXxfqEVeiDE6xijRzZ42keKc/JPRU5bmiVcVTxrwlMnMXbT02EM9twB/yrlBcPHvxdw== root@localhost.localdomain' >> /root/.ssh/authorized_keys
-#chmod 600 /root/.ssh/authorized_keys
-
-#curl -k 'http://192.168.11.3/api/duty/duty_pool.php?key=logapp&type=2'
-
-
-
-
+#vim setting
+sed -i "8 s/^/alias vi='vim'/" /root/.bashrc
 cat >> /etc/vimrc << EOF
 set fenc=utf-8 "设定默认解码
 set fencs=utf-8,usc-bom,euc-jp,gb18030,gbk,gb2312,cp936
@@ -111,17 +121,18 @@ set showmatch "高亮显示匹配的括号
 set matchtime=5 "匹配括号高亮时间(单位为 1/10 s)
 set ignorecase "在搜索的时候忽略大小写
 syntax on
-filetype plugin indent on
-syntax enable
-set cursorline
-set t_Co=256
-colorscheme molokai
-autocmd BufNewFile,BufRead * :syntax match cfunctions "\<[a-zA-Z_][a-zA-Z_0-9]*\>[^()]*)("me=e-2
-autocmd BufNewFile,BufRead * :syntax match cfunctions "\<[a-zA-Z_][a-zA-Z_0-9]*\>\s*("me=e-1"))"
-hi cfunctions ctermfg=81
-hi Type ctermfg=118 cterm=none
-hi Structure ctermfg=118 cterm=none
-hi Macro ctermfg=161 cterm=bold
-hi PreCondit ctermfg=161 cterm=bold
 EOF
-%end
+
+# 脚本目录加入PATH
+grep -q "/App/script" $HOME/.bash_profile || cat >> $HOME/.bash_profile << EOF
+########################################
+export PATH=/App/script:\$PATH
+EOF
+cat << EOF
++--------------------------------------------------------------+
+|                    ===System init over===                    |
++--------------------------------------------------------------+
++---------------------------by GuoLikai--------------------------+
+EOF
+echo "###############################################################"
+
