@@ -1,7 +1,13 @@
 1.mysql
 
 2.zabbix
-wget https://sourceforge.net/projects/zabbix/files/latest/download/zabbix-3.2.4.tar.gz
+源码包：wget https://sourceforge.net/projects/zabbix/files/latest/download/zabbix-3.2.4.tar.gz
+rpm包：http://repo.zabbix.com/zabbix/3.2/rhel/7/x86_64/
+yum -y install http://repo.zabbix.com/zabbix/3.2/rhel/7/x86_64/zabbix-release-3.2-1.el7.noarch.rpm
+
+zabbix监控数据库：
+https://www.percona.com/downloads/percona-monitoring-plugins
+https://www.percona.com/software/mysql-tools/percona-monitoring-plugins
 
 3.grafana
 wget https://grafanarel.s3.amazonaws.com/builds/grafana-4.1.2-1486989747.linux-x64.tar.gz
@@ -20,3 +26,19 @@ tar xvfz telegraf-1.2.1_linux_amd64.tar.gz
 5.tomcat
 wget http://mirrors.tuna.tsinghua.edu.cn/apache/tomcat/tomcat-8/v8.5.12/bin/apache-tomcat-8.5.12.tar.gz
 wget http://mirrors.tuna.tsinghua.edu.cn/apache/tomcat/tomcat-9/v9.0.0.M18/bin/apache-tomcat-9.0.0.M18.tar.gz
+
+6.keepalived
+yum -y install openssl openssl-devel
+wget http://www.keepalived.org/software/keepalived-1.2.24.tar.gz
+ tar xf keepalived-1.2.19.tar.gz -C /App/build/OPS/
+cd /App/build/OPS/keepalived-1.2.19/
+./configure --prefix=/App/install/OPS/keepalived-1.2.19 --disable-fwmark
+make 
+make install
+
+7.Ansible中文权威指南 
+http://www.ansible.com.cn/
+
+8.saltstack
+https://github.com/unixhot/saltbook-code
+安装支持saltstack显示进程名的包：yum -y install python-setproctitle
