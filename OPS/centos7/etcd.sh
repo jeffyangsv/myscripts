@@ -1,5 +1,12 @@
 #!/bin/bash
-# 编译安装管理etcd
+##########################################################################
+#Name:        etcd.sh
+#Version:     v3.1.5
+#Create_Date: 2017-4-19
+#Author:      GuoLikai(glk73748196@sina.com)
+#Description: "编译安装管理etcd"
+##########################################################################
+
 App=etcd-v3.1.5-linux-amd64
 AppName=etcd
 AppOptBase=/App/opt/OPS
