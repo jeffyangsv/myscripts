@@ -30,7 +30,7 @@ InstallFlag=0
 # 获取PID
 fpid()
 {
-    AppMasterPid=$(ps ax | grep "influxdb" | grep -v "grep" | awk '{print $1}' 2> /dev/null)
+    AppMasterPid=$(ps ax | grep "influxd" | grep -v "grep" | awk '{print $1}' 2> /dev/null)
 }
 
 # 查询状态
