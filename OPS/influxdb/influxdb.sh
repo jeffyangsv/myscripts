@@ -174,7 +174,13 @@ fstart()
     else
         #/App/install/OPS/influxdb/usr/bin/influxd -config=/App/conf/OPS/influxdb/influxdb.conf
 	$AppProg -config="$AppConfDir/$AppName.conf" &>/dev/null &
-	[ $? -eq 0 ] && echo "$AppName 启动成功" || echo "$AppName 启动失败"
+	sleep 0.5
+        if [ -n "$(ps ax | grep "$AppName" | grep -v "grep" | awk '{print $1}' 2> /dev/null)" ]; then
+           echo "$AppName 启动成功" 
+        else
+           echo "$AppName 启动失败"
+        fi
+	#[ $? -eq 0 ] && echo "$AppName 启动成功" || echo "$AppName 启动失败"
     fi
 } 
 
