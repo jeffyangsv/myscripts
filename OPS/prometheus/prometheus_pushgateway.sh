@@ -148,6 +148,7 @@ fstart()
            echo "$AppName 启动成功" 
         else
            echo "$AppName 启动失败"
+        fi
     fi
 } 
 
