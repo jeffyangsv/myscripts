@@ -156,7 +156,12 @@ fstart()
 		 -storage.local.path=$AppInstallDir/data \
 		 -web.console.libraries=$AppInstallDir/console_libraries \
 		 -web.console.templates=$AppInstallDir/consoles &>/dev/null &
-	 [ $? -eq 0 ] && echo "$AppName 启动成功" || echo "$AppName 启动失败"
+        sleep 0.5
+        if [ -n "$(ps ax | grep "$AppName" | grep -v "grep" | awk '{print $1}' 2> /dev/null)" ]; then
+           echo "$AppName 启动成功" 
+        else
+           echo "$AppName 启动失败"
+        fi
     fi
 } 
 
