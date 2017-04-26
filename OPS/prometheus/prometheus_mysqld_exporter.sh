@@ -180,7 +180,12 @@ fstart()
         echo "$AppName 正在运行"
     else
         $AppProg -config.my-cnf="$AppConf" &>/dev/null &
-	    [ $? -eq 0 ] && echo "$AppName 启动成功" || echo "$AppName 启动失败"
+	sleep 0.5
+        if [ -n "$(ps ax | grep "$AppName" | grep -v "grep" | awk '{print $1}' 2> /dev/null)" ]; then
+           echo "$AppName 启动成功" 
+        else
+           echo "$AppName 启动失败"
+        fi
     fi
 } 
 
