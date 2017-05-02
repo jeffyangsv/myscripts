@@ -26,6 +26,7 @@ tar xvfz telegraf-1.2.1_linux_amd64.tar.gz
 5.tomcat
 wget http://mirrors.tuna.tsinghua.edu.cn/apache/tomcat/tomcat-8/v8.5.12/bin/apache-tomcat-8.5.12.tar.gz
 wget http://mirrors.tuna.tsinghua.edu.cn/apache/tomcat/tomcat-9/v9.0.0.M18/bin/apache-tomcat-9.0.0.M18.tar.gz
+http://mirrors.tuna.tsinghua.edu.cn/apache//ant/binaries/apache-ant-1.9.9-bin.tar.gz
 
 6.keepalived
 yum -y install openssl openssl-devel
@@ -42,3 +43,10 @@ http://www.ansible.com.cn/
 8.saltstack
 https://github.com/unixhot/saltbook-code
 安装支持saltstack显示进程名的包：yum -y install python-setproctitle
+salt丢机器： 调整master的timeout时间：30
+
+9.elk
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.3.2.tar.gz
+wget https://artifacts.elastic.co/downloads/kibana/kibana-5.3.2-linux-x86_64.tar.gz
+wget https://artifacts.elastic.co/downloads/logstash/logstash-5.3.2.tar.gz
+curl -XGET 'http://192.168.56.11:9200/_count?pretty' -d '{"query": { "match_all": {} }}'
