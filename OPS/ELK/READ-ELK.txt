@@ -1,0 +1,39 @@
+ELK部署概要：
+源码包路径：[root@localhost ~]# tree /App/src/OPS/
+/App/src/OPS/
+├── elasticsearch-5.3.2.tar.gz
+├── jdk-8u131-linux-x64.tar.gz
+├── kibana-5.3.2-linux-x86_64.tar.gz
+├── logstash-5.3.2.tar.gz
+└── node-v6.10.2-linux-x64.tar
+脚本路径： [root@localhost ~]# tree /App/script/OPS/
+/App/script/OPS/
+├── elasticsearch-head-plugins.sh
+├── elasticsearch.sh
+├── jdk-1.8
+├── kibana.sh
+└── logstash.sh
+
+ELK安装过程：
+1.JDK8安装
+/App/script/OPS/jdk-1.8 install
+/App/script/OPS/jdk-1.8 init
+
+2.elasticsearch-5.3.2安装
+/App/script/OPS/elasticsearch.sh install
+/App/script/OPS/elasticsearch.sh start
+WEB浏览器访问：http://ip:9200
+
+3.elasticsearch-head-plugin安装
+/App/script/OPS/elasticsearch-head-plugin.sh install
+/App/script/OPS/elasticsearch-head-plugin.sh start
+WEB浏览器访问：http://ip:9100
+
+4.logstash-5.3.2安装
+/App/script/OPS/logstash.sh install
+/App/script/OPS/logstash.sh start
+
+5.kibana-5.3.2安装
+/App/script/OPS/kibana.sh install
+/App/script/OPS/kibana.sh start
+WEBWEB浏览器访问：http://ip:5601
