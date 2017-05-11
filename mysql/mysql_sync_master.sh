@@ -1,8 +1,8 @@
 #!/bin/bash
 ##################################################
-#Name:        mysql_mater_backup.sh
+#Name:        mysql_sync_master.sh
 #Version:     v3.0
-#Create_Date£º2017-2-18
+#Create_Date: 2017-2-18
 #Author:      GuoLikai(glk73748196@sina.com)
 #Description: "Mysql一键备份主库脚本"
 ##################################################
