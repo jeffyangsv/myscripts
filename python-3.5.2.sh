@@ -1,5 +1,12 @@
 #!/bin/sh
-# 编译安装管理Python3
+##################################################
+#Name:        Python-3.5.2
+#Version:     v3.5.2
+#Create_Date: 2017-5-17
+#Author:      GuoLikai(glk73748196@sina.com)
+#Description: "编译安装管理Python3"
+##################################################
+
 App=Python-3.5.2
 AppName=python3
 AppOptBase=/App/opt/OPS
@@ -133,7 +140,6 @@ fsymlink()
     ln -s $AppInstallDir  $AppOptDir
 	python3 -V
 }
-
 
 ScriptDir=$(cd $(dirname $0); pwd)
 ScriptFile=$(basename $0)
