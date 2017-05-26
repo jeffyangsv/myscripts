@@ -1,5 +1,12 @@
 #!/bin/sh
-# 安装管理Tomcat 6.0.45
+##################################################
+#Name:        tomcat-6.0.sh
+#Version:     v5.3.2
+#Create_Date: 2017-4-25
+#Author:      GuoLikai(glk73748196@sina.com)
+#Description: "安装管理Tomcat 6.0.45"
+##################################################
+
 App=apache-tomcat-6.0.45
 AppName=tomcat
 AppOptBase=/App/opt/OPS
