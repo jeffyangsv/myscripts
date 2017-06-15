@@ -8,7 +8,7 @@
 ##################################################
 
 #指定容器IP配置
-fsetip_container(){
+fbondip_container(){
 if [ `id -u` -ne 0 ];then
     echo '必须使用root权限'  
     exit  
@@ -127,9 +127,9 @@ ScriptDir=$(cd $(dirname $0); pwd)
 ScriptFile=$(basename $0)
 
 case "$1" in
-    "setip"   		)	fsetip_container $2 $3;;
+    "bondip"   		)	fbondip_container $2 $3;;
     "enter"   		) 	fdocker_enter $2;;
-    "ps"   			) 	fallstatus;;
+    "ps"   		) 	fallstatus;;
     "start"  		) 	fstart $2;;
     "stop"    		) 	fstop $2;;
     "restart"		) 	frestart $2;;
@@ -138,17 +138,17 @@ case "$1" in
     "allstop"    	) 	fallstop;;
     "allrestart" 	) 	fallrestart $2;;
     "allrm"      	) 	falldelete $2;;
-    *            	)
-    echo "$ScriptFile setip             指定容器IP   $AppName"
+    *    )
+    echo "$ScriptFile bondip            指定容器IP   $AppName"
     echo "$ScriptFile enter             进入容器 	 $AppName"
     echo "$ScriptFile ps                查看状态 	 $AppName"
     echo "$ScriptFile start             启动容器 	 $AppName"
     echo "$ScriptFile stop              停止容器 	 $AppName"
-    echo "$ScriptFile restart           重启容器 	 $AppName"
-    echo "$ScriptFile rm                删除容器 	 $AppName"
-    echo "$ScriptFile allstart          启动所有容器 $AppName"
-    echo "$ScriptFile allstop           停止所有容器 $AppName"
-    echo "$ScriptFile allrestart        重启所有容器 $AppName"
-    echo "$ScriptFile allrm             删除所有容器 $AppName"
+    echo "$ScriptFile restart           重启容器	 $AppName"
+    echo "$ScriptFile rm                删除容器	 $AppName"
+    echo "$ScriptFile allstart          启动所有容器  $AppName"
+    echo "$ScriptFile allstop           停止所有容器  $AppName"
+    echo "$ScriptFile allrestart        重启所有容器  $AppName"
+    echo "$ScriptFile allrm             删除所有容器  $AppName"
     ;;
 esac
