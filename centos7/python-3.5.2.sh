@@ -65,6 +65,7 @@ fremove()
             rm -rf $AppConfDir
             rm -rf $AppOptDir
             rm -rf $AppLogDir
+			rm -rf /usr/bin/python3
         else
             echo "$AppName 未安装"
         fi
@@ -103,7 +104,7 @@ finstall()
 
     if [ -z "$AppMasterPid" ]; then
         test -f "$AppProg" && echo "$AppName 已安装" 
-        [ $? -ne 0 ] && fupdate && fsymlink
+        [ $? -ne 0 ] && finsdep && fupdate && fsymlink
     else
         echo "$AppName 正在运行"
     fi
@@ -120,7 +121,7 @@ fupdate()
     tar zxf $AppSrcBase/$AppTarBall -C $AppBuildBase || tar jxf $AppSrcBase/$AppTarBall -C $AppBuildBase
     /usr/bin/cp -rp $AppBuildDir $AppInstallDir
 	#rm -rf /usr/bin/python   #删除Python2
-	cd $AppInstallDir && ./configure &&  make && make install
+	cd $AppInstallDir && ./configure --with-zlib --enable-shared --enable-loadable-sqlite-extensions &&  make && make install
     if [ $? -eq 0 ]; then
         echo "$AppName $Operate成功"
     else
@@ -138,6 +139,7 @@ fsymlink()
 	
 	ln -s /usr/local/bin/python3.5 /usr/bin/python3
     ln -s $AppInstallDir  $AppOptDir
+	echo "/usr/local/lib" >> /etc/ld.so.conf && /sbin/ldconfig && /sbin/ldconfig -v
 	python3 -V
 }
 
@@ -149,22 +151,10 @@ case "$1" in
     "reinstall" ) fremove && finstall;;
     "remove"    ) fremove;;
     "backup"    ) fbackup;;
-#    "cpconf"    ) fcpconf;;
-#    "start"     ) fstart;;
-#    "stop"      ) fstop;;
-#    "status"    ) fstatus;;
-#    "restart"   ) frestart;;
-#    "kill"      ) fkill;;
     *           )
     echo "$ScriptFile install              安装 $AppName"
     echo "$ScriptFile update               更新 $AppName"
     echo "$ScriptFile reinstall            重装 $AppName"
     echo "$ScriptFile remove               删除 $AppName"
-#    echo "$ScriptFile backup               备份 $AppName"
-#    echo "$ScriptFile start                启动 $AppName"
-#    echo "$ScriptFile status               状态 $AppName"
-#    echo "$ScriptFile stop                 停止 $AppName"
-#    echo "$ScriptFile restart              重启 $AppName"
-#    echo "$ScriptFile kill                 终止 $AppName 进程"
     ;;
 esac
