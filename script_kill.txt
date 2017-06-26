@@ -27,6 +27,7 @@ HOST=`/sbin/ifconfig eth0 |grep "inet addr" |awk -F[:" "] '{print $13}'`
 
 
 4.Git使用命令:
+《git &github 快速入门》 http://www.cnblogs.com/alex3714/articles/5930846.html 
 git clone https://github.com/guolikai/
 git status
 git fetch origin master  #该指令意思是从远程origin仓库的master主分支更新最新的版本到origin/master分支上
@@ -40,4 +41,4 @@ git push origin master
 输入“git remote add origin https://github.com/gsb001/FirstPepo.git”，将远端https://github.com/gsb001/FirstPepo.git绑定到本地git上
 输入“git push -u origin master”，将任务推送到远端origin的master分支上
 
-5.zabbix设置
+
