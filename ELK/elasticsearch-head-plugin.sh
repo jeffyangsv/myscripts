@@ -1,6 +1,6 @@
 #/bin/bash
 ##################################################
-#Name:        elasticsearch-head-plugins.sh
+#Name:        elasticsearch-head-plugin.sh
 #Version:     v5.3.2
 #Create_Date: 2017-4-25
 #Author:      GuoLikai(glk73748196@sina.com)
@@ -52,6 +52,10 @@ fstatus()
 # 删除
 fremove()
 {
+	rm -rf $AppInstallBase/node-v6.10.2-linux-x64
+	rm -rf $AppOptBase/node
+    rm -rf /usr/bin/node
+	rm -rf /usr/bin/npm
     fpid
     RemoveFlag=1
 
@@ -99,13 +103,13 @@ finstall()
     InstallFlag=1
     if [ -z "$AppMasterPid" ]; then
         test -f "$AppProg" && echo "$AppName 已安装" 
-        [ $? -ne 0 ] && frelay && fupdate && fsymlink && fcpconf 
+        [ $? -ne 0 ] && findeps && fupdate && fsymlink && fcpconf 
     else
         echo "$AppName 正在运行"
     fi
 }
 #依赖
-frelay()
+findeps()
 {
 yum -y install git xz
 #curl -sL -o /etc/yum.repos.d/khara-nodejs.repo https://copr.fedoraproject.org/coprs/khara/nodejs/repo/epel-7/khara-nodejs-epel-7.repo
@@ -115,7 +119,9 @@ cd $AppSrcBase
 xz -d node*.tar.xz
 tar -xvf node*.tar -C $AppInstallBase
 ln -s $AppInstallBase/node-v6.10.2-linux-x64 $AppOptBase/node
+ln -s $AppOptBase/node/bin/node /usr/bin/node
 ln -s $AppOptBase/node/lib/node_modules/npm/bin/npm-cli.js  /usr/bin/npm
+echo "$AppName包依赖安装完成"
 }
 
 # 更新
@@ -153,7 +159,7 @@ fsymlink()
 # 拷贝配置
 fcpconf()
 {   
-	pass
+	echo "Cp conf file Ok "
 }
 
 
