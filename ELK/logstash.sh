@@ -30,6 +30,9 @@ AppPidFile=$AppLogDir/$AppName.pid
 
 HostIp=$(/usr/sbin/ifconfig eth0 | grep inet | grep -v inet6 | awk -F ' ' '{print $2}')
 ClusterName=glk-test
+MemFree=$(free -m | grep Mem | awk '{print $2}')
+XMS=$[$MemFree/4]
+XMX=$[$MemFree/4]
 
 RemoveFlag=0
 InstallFlag=0
@@ -143,8 +146,8 @@ fsymlink()
 fcpconf()
 {   
 	cp  $AppConfDir/jvm.options{,.bak}
-	sed -i "/^-Xms/c-Xms128m" $AppConfDir/jvm.options
-    sed -i "/^-Xmx/c-Xmx128m" $AppConfDir/jvm.options
+	sed -i "/^-Xms/c-Xms${XMS}m" $AppConfDir/jvm.options
+    sed -i "/^-Xmx/c-Xmx${XMX}m" $AppConfDir/jvm.options
 	touch $AppConf
 	cat >>  $AppConf << EOF
 input {

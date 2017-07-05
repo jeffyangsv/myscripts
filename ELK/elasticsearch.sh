@@ -26,9 +26,12 @@ AppConf=$AppLogDir/$AppName.yml
 
 AppDataDir=/App/data/OPS/$AppName
 AppPidFile=$AppLogDir/$AppName.pid
-AppUser=elsearch
+AppUser=elk
 
 HostIp=$(/usr/sbin/ifconfig eth0 | grep inet | grep -v inet6 | awk -F ' ' '{print $2}')
+MemFree=$(free -m | grep Mem | awk '{print $2}')
+XMS=$[$MemFree/4]
+XMX=$[$MemFree/4]
 ClusterName=glk-test
 
 RemoveFlag=0
@@ -65,7 +68,7 @@ fremove()
     Day=$(date +%Y-%m-%d)
     BackupFile=$AppName.$Day.bak
     if [ -f "$AppConfDir/$AppConfName" ]; then
-    	mv $AppConfDir/$AppConfName $AppConfBase/$BackupFile
+        mv $AppConfDir/$AppConfName $AppConfBase/$BackupFile
     fi
 
     if [ -z "$AppMasterPid" ]; then
@@ -142,25 +145,33 @@ fsymlink()
     [ -L $AppConfDir ] && rm -f $AppConfDir
     [ -L $AppLogDir ] && rm -f $AppLogDir
     ln -s $AppInstallDir $AppOptDir
-	ln -s $AppInstallDir/config $AppConfDir
+    ln -s $AppInstallDir/config $AppConfDir
 }
 
 # 拷贝配置
 fcpconf()
 {   
-	cp  $AppConfDir/jvm.options{,.bak}
-	sed -i "/^-Xms/c-Xms256m" $AppConfDir/jvm.options
-	sed -i "/^-Xmx/c-Xmx256m" $AppConfDir/jvm.options
-	cp  $AppConfDir/$AppName.yml{,.bak}
-	sed -i "/^#cluster.name/ccluster.name: ${ClusterName}" $AppConfDir/$AppName.yml
+    Result=$(grep "vm.max_map_count" /etc/sysctl.conf | wc -l)
+    if [ $Result -eq 0 ];then
+        echo "vm.max_map_count = 655360" >> /etc/sysctl.conf
+        sysctl -p &> /dev/null
+    fi
+    cp  $AppConfDir/jvm.options{,.bak}
+    sed -i "/^-Xms/c-Xms${XMS}m" $AppConfDir/jvm.options
+    sed -i "/^-Xmx/c-Xmx${XMX}m" $AppConfDir/jvm.options
+    cp  $AppConfDir/$AppName.yml{,.bak}
+    sed -i "/^#cluster.name/ccluster.name: ${ClusterName}" $AppConfDir/$AppName.yml
     sed -i "/^#node.name/cnode.name: ${HostIp}"            $AppConfDir/$AppName.yml
-	sed -i "/^#path.data/cpath.data: ${AppDataDir}"        $AppConfDir/$AppName.yml
+    sed -i "/^#path.data/cpath.data: ${AppDataDir}"        $AppConfDir/$AppName.yml
     sed -i "/^#path.logs/cpath.logs: ${AppLogDir}"         $AppConfDir/$AppName.yml
-    sed -i "/^#bootstrap.memory_lock/cbootstrap.memory_lock: false"   $AppConfDir/$AppName.yml
+    sed -i "/^#bootstrap.memory_lock/cbootstrap.memory_lock: false"    $AppConfDir/$AppName.yml
     sed -i "/^#network.host/cnetwork.host: 0.0.0.0"        $AppConfDir/$AppName.yml
     sed -i "/^#http.port/chttp.port: 9200"                 $AppConfDir/$AppName.yml
-	echo "discovery.zen.ping.multicast.enabled: false
-	discovery.zen.ping.hosts: [\"${HostIp}\"]" >> $AppConfDir/$AppName.yml
+    echo "#discovery.zen.ping.multicast.enabled: false" >> $AppConfDir/$AppName.yml
+    echo "#discovery.zen.ping.hosts: [\"${HostIp}\"]"   >> $AppConfDir/$AppName.yml
+    echo "http.cors.enabled: true"                      >> $AppConfDir/$AppName.yml
+    echo "http.cors.allow-origin: \"*\""                >> $AppConfDir/$AppName.yml
+    echo "discovery.zen.ping.unicast.hosts: [\"${HostIp}\"]"        >> $AppConfDir/$AppName.yml
 }
 
 
@@ -172,10 +183,10 @@ fstart()
         echo "$AppName 正在运行"
     else
         su $AppUser <<EOF
-		$AppProg &> /dev/null &
-		exit;
+        $AppProg &> /dev/null &
+        exit;
 EOF
-	    sleep 1
+        sleep 1
         if [ -n "$(ps ax | grep "$AppName" | grep -v "grep" | awk '{print $1}' 2> /dev/null)" ]; then
            echo "$AppName 启动成功" 
         else
