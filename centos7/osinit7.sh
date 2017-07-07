@@ -63,7 +63,7 @@ EOF
 sed -i 's/^GSSAPIAuthentication yes$/GSSAPIAuthentication no/' /etc/ssh/sshd_config
 sed -i 's/#UseDNS yes/UseDNS no/' /etc/ssh/sshd_config
 #sed -i 's/#Port 22/Port 6343/' /etc/ssh/sshd_config
-service sshd restart
+systemctl restart sshd
 
 # set sysctl
 true > /etc/sysctl.conf
@@ -135,4 +135,3 @@ cat << EOF
 +---------------------------by GuoLikai--------------------------+
 EOF
 echo "###############################################################"
-
