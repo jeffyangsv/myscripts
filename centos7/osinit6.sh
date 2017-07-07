@@ -1,6 +1,6 @@
 #!/bin/sh
 ##################################################
-#Name:        osinit.sh
+#Name:        osinit6.sh
 #Version:     v1.0
 #Create_Date：2016-6-6
 #Author:      GuoLikai(glk73748196@sina.com)
@@ -145,4 +145,3 @@ m8UwpuiZlyNQz3KzFgZOvxXiqnq6iKgVQrKh/V4d4mroqojVu2i19e3CAfbgwom4uosHsD4uMZlqJ5Z7
 dnyFyt3hMXThLsAF+gBv5KqMjVXfXxfqEVeiDE6xijRzZ42keKc/JPRU5bmiVcVTxrwlMnMXbT02EM9twB/yrlBcPHvxdw== root@localhost.localdomain' >> /root/.ssh/author
 ized_keys
 chmod 600 /root/.ssh/authorized_keys
-
