@@ -35,7 +35,7 @@ mkdir -p /App/script/{SRT,OPS} /App/src/{SRT,OPS} /App/build/{SRT,OPS} /App/inst
 # 换repo源
 mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bak
 #sed -i "/gpgcheck=1/cgpgcheck=0" /etc/yum.repos.d/*.repo
-wget http://mirrors.aliyun.com/repo/epel.repo -O /etc/yum.repos.d/epel.repo
+wget http://mirrors.aliyun.com/repo/epel-7.repo -O /etc/yum.repos.d/epel-7.repo
 wget http://mirrors.aliyun.com/repo/Centos-7.repo -O /etc/yum.repos.d/CentOS-Base.repo
 wget http://mirrors.163.com/.help/CentOS7-Base-163.repo -O /etc/yum.repos.d/epel-163.repo
 
