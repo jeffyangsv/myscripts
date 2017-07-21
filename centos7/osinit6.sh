@@ -94,7 +94,7 @@ mkdir -p /App/script/{SRT,OPS} /App/src/{SRT,OPS} /App/build/{SRT,OPS} /App/inst
 
 # 换repo源
 mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bak
-wget http://mirrors.aliyun.com/repo/epel.repo -O /etc/yum.repos.d/epel.repo
+wget http://mirrors.aliyun.com/repo/epel-6.repo -O /etc/yum.repos.d/epel-6.repo
 wget http://mirrors.aliyun.com/repo/Centos-6.repo -O /etc/yum.repos.d/CentOS-Base.repo
 
 # 安装插件
