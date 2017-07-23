@@ -46,7 +46,8 @@ yum -y install python-simplejson libselinux-python
 
 # 设置静态IP
 ETH_NUM=$(ip addr|egrep "inet+"|egrep "brd+"|grep -v "lo:"|awk '{print $NF}'|wc -l)
-for i in $(seq 0 $[$ETH_NUM-1])
+#for i in $(seq 0 $[$ETH_NUM-1])
+for i in $(seq 0 $ETH_NUM)
 do
 #mv /etc/sysconfig/network-scripts/ifcfg-eth$i /etc/sysconfig/network-scripts/ifcfg-eth$i.bak
 cat > /etc/sysconfig/network-scripts/ifcfg-eth$i << EOF
