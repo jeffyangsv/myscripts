@@ -51,7 +51,7 @@ fconfig(){
     cp /etc/cobbler/dhcp.template{,.bak}
     sed -i "/^subnet 192.168.1.0/s#192.168.1.0#${HOST_SUBNET}#"                    /etc/cobbler/dhcp.template
     sed -i "/[[:space:]]option routers/s#192.168.1.5#${GATEWAY}#"                  /etc/cobbler/dhcp.template
-    sed -i "/[[:space:]]option subnet-mask/s#255.255.255.0#${SUBNET_MASK}#"                  /etc/cobbler/dhcp.template
+    sed -i "/[[:space:]]option subnet-mask/s#255.255.255.0#${SUBNET_MASK}#"        /etc/cobbler/dhcp.template
     sed -i "/[[:space:]]option domain-name-servers/s#192.168.1.1#${DNS}#"          /etc/cobbler/dhcp.template
     sed -i "/[[:space:]]range dynamic-bootp/s#192.168.1.100 192.168.1.254#${SUBNET_START} ${SUBNET_END}#" /etc/cobbler/dhcp.template
     sed -i "/cobbler.github.io/s#cobbler.github.io#${Domain_Name}#" /etc/cobbler/pxe/pxedefault.template
@@ -66,7 +66,7 @@ ScriptFile=$(basename $0)
 case "$1" in
     "osinit"    ) fosinit;;
     "install"   ) finstall;;
-    "remove"   ) fremove;;
+    "remove"    ) fremove;;
     "config"    ) fconfig;;
     *           )
     echo "$ScriptFile osinit               系统 $AppName"
