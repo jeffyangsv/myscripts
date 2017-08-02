@@ -137,17 +137,15 @@ fi
 ScriptDir=$(cd $(dirname $0); pwd)
 ScriptFile=$(basename $0)
 case "$1" in
-#    "grub"   ) fgrub;;
     "eth0"   ) feth0;;
     "eth1"   ) feth1;;
     "eth2"   ) feth2  $2;;
     "bond0"  ) fbond0 $2;;
     "setbond" ) fsetbond $2;;
      * )
-#   echo "$ScriptFile grub                  编辑内核信息"
-    echo "$ScriptFile eth0                  配置网卡$ETH0"
-    echo "$ScriptFile eth1                  配置网卡$ETH1"
-    echo "$ScriptFile eth2    backup_ip     备份网卡$ETH2"
+    echo "$ScriptFile eth0                  配置网卡ETH0"
+    echo "$ScriptFile eth1                  配置网卡ETH1"
+    echo "$ScriptFile eth2    backup_ip     备份网卡ETH2"
     echo "$ScriptFile bond0   bond_ip       配置网卡bond0"
     echo "$ScriptFile setbond bond_ip       设置bond"
     ;;
