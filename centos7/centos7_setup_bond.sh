@@ -64,9 +64,9 @@ fi
 fbond0()
 {   
     if [ $# -eq 1 ];then
-	    BOND_IP=$1
-		BOND_IP_BASE=$(echo ${BOND_IP} | cut -d . -f  1-3)
-		BOND_GATEWAY=${BOND_IP_BASE}.${GATEWAY_NUM}
+	BOND_IP=$1
+	BOND_IP_BASE=$(echo ${BOND_IP} | cut -d . -f  1-3)
+	BOND_GATEWAY=${BOND_IP_BASE}.${GATEWAY_NUM}
     else
         echo "USAGE: $0 bond0 ${BOND_IP_BASE}.HOST"
         exit 1   
@@ -75,7 +75,7 @@ fbond0()
     if [ -f /etc/sysconfig/network-scripts/ifcfg-bond0 ];then 
         echo "bond0已设置"
     else	
-	    echo "DEVICE=bond0
+	echo "DEVICE=bond0
 NAME=bond0
 BOOTPROTO=static
 BONDING_MASTER=yes
@@ -92,9 +92,9 @@ BONDING_OPTS=mode=active-backup" > /etc/sysconfig/network-scripts/ifcfg-bond0
 
 feth2(){
     if [ $# -eq 1 ];then
-	    BACKUP_IP=$1
-		BACKUP_IP_BASE=$(echo ${BACKUP_IP} | cut -d . -f  1-3)
-		BACKUP_GATEWAY=${BOND_IP_BASE}.${GATEWAY_NUM}
+	BACKUP_IP=$1
+	BACKUP_IP_BASE=$(echo ${BACKUP_IP} | cut -d . -f  1-3)
+        BACKUP_GATEWAY=${BOND_IP_BASE}.${GATEWAY_NUM}
     else
         echo "USAGE: $0 eth2 ${BACKUP_IP_BASE}.HOST"
         exit 2    
