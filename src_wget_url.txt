@@ -1,4 +1,6 @@
 Centos系列镜像下载地址 http://archive.kernel.org/centos-vault/
+Ubuntu系列镜像下载地址 http://mirrors.aliyun.com/ubuntu-releases/
+
 1.mysql
 
 2.zabbix
