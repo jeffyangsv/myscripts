@@ -1,11 +1,28 @@
-#!/usr/bin/env bash    
-##################################################
+#!/usr/bin/env bash
+#--------------------------------------------------
 #Name:        docker_ops.sh
 #Version:     v0.0.1
 #Create_Date: 2017-6-15
 #Author:      GuoLikai(glk73748196@sina.com)
 #Description: "docker基本操作"
-##################################################
+#--------------------------------------------------
+
+AppName=Docker
+
+#安装Docker CE版本
+fdocker_install(){
+	yum install -y yum-utils device-mapper-persistent-data lvm2
+	yum-config-manager --enable extras
+	sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+	yum-config-manager --enable docker-ce-edge
+	yum makecache fast
+	yum list docker-ce.x86_64  --showduplicates |sort -r
+	#yum -y install docker-ce-17.03.1.ce
+	#yum -y install docker-ce-17.07.0.ce-1
+	yum -y install docker-ce.x86_64
+	systemctl start dokcer
+	systemctl enable dokcer
+}
 
 #指定容器IP配置
 fbondip_container(){
@@ -127,6 +144,7 @@ ScriptDir=$(cd $(dirname $0); pwd)
 ScriptFile=$(basename $0)
 
 case "$1" in
+    "install"   	)	fdocker_install;;
     "bondip"   		)	fbondip_container $2 $3;;
     "enter"   		) 	fdocker_enter $2;;
     "ps"   		) 	fallstatus;;
@@ -139,6 +157,7 @@ case "$1" in
     "allrestart" 	) 	fallrestart $2;;
     "allrm"      	) 	falldelete $2;;
     *    )
+    echo "$ScriptFile install           安装Docker  $AppName"
     echo "$ScriptFile bondip            指定容器IP   $AppName"
     echo "$ScriptFile enter             进入容器 	 $AppName"
     echo "$ScriptFile ps                查看状态 	 $AppName"
