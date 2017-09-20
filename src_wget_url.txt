@@ -54,3 +54,6 @@ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.3.2.ta
 wget https://artifacts.elastic.co/downloads/kibana/kibana-5.3.2-linux-x86_64.tar.gz
 wget https://artifacts.elastic.co/downloads/logstash/logstash-5.3.2.tar.gz
 curl -XGET 'http://192.168.56.11:9200/_count?pretty' -d '{"query": { "match_all": {} }}'
+
+10.玩转Python之发短信
+http://baijiahao.baidu.com/s?id=1567710359169274&wfr=spider&for=pc
