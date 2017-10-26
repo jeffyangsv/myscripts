@@ -4,6 +4,9 @@ screen -S beifenmingcheng
 退出终端并终止： crtl+D
 退出终端加后台运行：crtl+alt+A 
 
+rsync命令：
+rsync -avP --exclude='panel.war/'  /usr/local/jboss1/server/default/deploy/*  10.10.20.49:/usr/local/jboss1/server/default/deploy/
+
 mkdir -p /App/{backup,build,conf,data,install,log,mnt,opt,scripts,src,srt,sync}/{OPS,SRT}
 1.Sed使用技巧:
 #替换带特殊字符的语句
