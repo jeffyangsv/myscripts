@@ -5,9 +5,9 @@ source /etc/profile
 NAME=mariadb_backup
 PORT=3308
 IP=localhost
-MAILUSER=sa@yanxiu.com
+MAILUSER=test@163.com
 DBUSER=backup
-DBPASSWORD='89#dA321i'
+DBPASSWORD='glk123'
 TODAY=$(date +'%Y-%m-%d')
 BACKUPDIR=/App/backup/mariadb/$TODAY
 BACKUPFILE=$BACKUPDIR/${NAME}.tgz
