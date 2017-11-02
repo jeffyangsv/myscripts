@@ -1,0 +1,283 @@
+管理工具 （自带的命令）
+++++++++++++++++++++++
+数据导入  把系统文件的内容保存到数                   据库的表里。
+mysql>  LOAD   DATA  INFILE  "文件名" 
+INTO  TABLE  库名.表名
+FIELDS  TERMINATED BY  "分隔符"
+LINES  TERMINATED BY  "\n";
+
+load  data   infile  "/etc/passwd"  into  table   cmdb.user     fields  terminated  by  ":"  lines  terminated  by  "\n";
+
+
+
+把系统账号信息存储到数据库的表里。
+    /etc/passwd         cmdb.user
+create   table   cmdb.user(
+name      char(30),
+password  char(1),
+uid  int(2),
+gid  int(2),
+comment   char(50),
+homedir   char(50),
+shell   char(50),
+index(name)
+);
+
+mysql> load  data   infile  "/etc/passwd"  into  table   cmdb.user     fields  terminated  by  ":"  lines  terminated  by  "\n";
+Query OK, 25 rows affected (0.00 sec)
+Records: 25  Deleted: 0  Skipped: 0  Warnings: 0
+
+mysql>  alter  table   cmdb.user  add     id    int(2)  zerofill  primary key  auto_increment  first;
++++++++++++++++++++++
+数据导出  把表里的记录存放到系统文件里。
+
+把mysql库下user表的记录保存到系统文件/tmp/user.txt里
+
+mysql> 
+SQL查询  INTO  OUTFILE “文件名”；
+
+SQL查询  INTO  OUTFILE “目录名/文件名”fields terminated by "符号"; lines  terminated  by  "符号";
+
+注意事项
+导出的内容由SQL查询语句决定
+若不指定路径，默认会放在执行导出命令时所在库对应的数据库目录下。
+应确保mysql用户对目标文件夹有写权限。
+
+
+select  *  from  mysql.user  into  outfile   "/tmp/user.txt";
+
+select  name,uid,gid from cmdb.user   into outfile "a.txt";
+
+mysql> select  name,uid,gid from cmdb.user   into outfile "/dataplj/a.txt";
+ERROR 1 (HY000): Can't create/write to file '/dataplj/a.txt' (Errcode: 13 - Permission denied)
+mysql>
+
+mysql> select  name,uid,gid from cmdb.user   into outfile "/dataplj/b.txt";
+ERROR 1086 (HY000): File '/dataplj/b.txt' already exists
+mysql>
+
+mkdir   /dataplj
+chown   mysql   /dataplj
+setenforce   0 
+
+select  name,uid,gid from cmdb.user   into outfile "/dataplj/a.txt";
+
+select  *  from  cmdb.user  order by  uid   desc  limit  5   into  outfile   "/tmp/user5.txt";
++++++++++++++++++++++
+管理表记录（增删改查）
+select 查询表记录
+select  字段列表   from 表名；
+
+select  字段列表   from 表名   where   条件表达式；
+
+select   *   from  cmdb.user;
+
+select   name,uid   from  cmdb.user;
+
+查询条件  
+1 字符比较      =      !=
+字段名   符号  “值” 
+select  *  from  user  where  name="root";
+
+select  name,shell  from  user  where  name!="root";
+
+2  数值比较
+字段名   符号  值
+=    !=     >    >=   <   <= 
+
+select    name,uid  from  user  where  uid=500;
+
+3  范围内查找
+between  ...  and  在... 之间
+in  (值列表)            在...里
+not  in  (值列表)    不在...里
+
+select  name,uid,gid,shell  from user  where   uid  between  100 and  150;
+
+select name  from user  where   name  in  ("rsync","lib",    "root");
+
+select name,uid  from user  where   uid   in  (10,2000,3001);
+
+select name,uid  from user  where   uid  not  in  (10,2000,3001);
+
+4  逻辑比较（多个查询条件）
+逻辑与    and  多个查询条件必须同时成立
+逻辑或   or     多个查询条件某个查询条件成立                      就可以
+逻辑非  !        取反   
+
+select  name from user  where  name="root"   and     uid=0     and  homedir="/root";
+
+select  name from user  where  name="root"   or    uid=10    or  homedir="/root";
+5  匹配空    is  null
+    匹配非空 is  not  null
+
+select  id,name from  user  where  uid is null;
+
+select  id,name,gid,shell from user where shell is null;
+
+select  id,name,gid,shell from user where shell is  not  null;
+  
+insert   into  user(id,name)values(37,"");
+select  id , name  from user where name="";
+
+insert   into  user(id,name)values(38,"null");
+
+insert   into  user(id,name)values(39,"NULL");
+
+select  id , name  from user where name="null";
+
+
+insert   into  user(id)values(40);
+select  id , name  from user where name is null;
+
+6  DISTINCT   查询时不显示字段的重复值。
+select    distinct  shell  from  user;
+
+7  having   在查询结果里过滤
+select name,uid  from user  where  uid<=500 ;
+
+select name,uid  from user where uid<=500 having  name="sync";
+
+8  查询记录时做数学计算
+（字段类型是数值类型）
++  -   *   /    %
+
+alter  table  user  add   age   tinyint(2)  unsigned   default   23  after  name; 
+
+
+select  name , age, 2016-age  from user  where name="root";
+
+select  name , age, 2016-age as s_year from user  where name in ("root","bin");
+
+select  name,uid,gid,(uid+gid)/2  as  pjz  from user;
+
+9 like 模糊查询
+字段名　　like    '表达式'；
+%   匹配零个或多个字符
+_     匹配任意一个字符
+
+select  name from  user;
+select  name from  user where   name like  'a___';
+select  name from  user where   name like  '_';
+
+select  name from  user where   name like  '%';
+
+select id,name from user where name like '_%_';
+
+select id,name from user where name like 'r%';
+
+列出name值“以 r 开头或以 t 结尾”的记录
+select  name  from user  where  name like   'r%'    or    name  like  '%t';
+
+
+select  name  from user  where  name like   'r%'    and   name  like  '%t';
+
+10 正则表达式
+where  字段名   regexp   '正则表达式'
+.   ^    $    [0-9]   [a-Z]
+
+select  name,uid  from  user  where uid  like  '____'; 
+
+select  name,uid  from  user  where uid 
+between   1000  and  9999;
+
+insert  into  user(name)values("plj9"),("8plj"),("p7lj");
+
+select  name from user where  name  regexp   '[0-9]';
+
+select  name,uid from user where  uid  regexp   '^..$';
+
+聚集函数（数学函数）
+avg(字段名)
+min(字段名)
+max(字段名)
+sum(字段名)
+count(字段名)
+select max(uid) from user;
+
+select count(id), count(name)from user;
+select count(*) from user;
+
+
+给查询结果排序 
+order  by   字段名  排序方式
+                                asc/desc
+
+select name,uid from user where uid>=500 order by  uid  desc;
+
+给查询结果分组  group by  字段名；
+mysql> select shell from user where uid>=500 group by   shell;
+
+limit  限制查询结果显示条目数 
+limit   数字；
+limit  n1,n2
+
+select id,name from user;
+
+select id,name from user limit 0, 2;
+select id,name from user limit 2;
+
+mysql> select id,name from user limit 2,4;
+
+mysql> select name,uid from user order by uid desc limit 5 into outfile  "/tmp/usertop5.txt";
+Query OK, 5 rows affected (0.00 sec)
+
+mysql> 
+
+
+复制表
+create  table  表名   sql查询命令；
+
+create  table  user2  select * from user;
+
+create  table  user3   select name,uid from user order  by uid desc limit 5；
+
+select  *  from  user  where  1 = 2;
+
+ create table user4 select  *  from  user  where  1 = 2;
+
+单表查询  
+
+嵌套查询 
+使用Where子查询
+把内层查询结果作为外层查询的查询条件
+
+select  字段名列表 from 表名   where  条件 （select  字段名列表 from 表名   where  条件 ）；
+
+
+select name,uid from user where uid < (select  avg(uid) from user);
+
+mysql> select name from cmdb.user where  name = (select user from mysql.user where host="localhost");
+
+
+多表查询   连接查询（左连接   右连接）
+select -lxt.txt
+
+
+++++++++++++++++++++++
+插入新记录
+
+插入新记录时依次向记录的所有字段赋值
+insert   into    表名    values(字段值列表);
+
+插入新记录时，向新记录指定字段赋值
+insert   into    表名（字段名列表）    values(字段值列表);
+
+
+insert  into  cmdb.user  values(26,"alice","x",2000,2000,"student","/home/alice","/sbin/nologin");
+
+insert  into  cmdb.user(name,password,uid,gid,comment,homedir,shell)   values("hanmm","x",2000,2000,"student","/home/alice","/sbin/nologin");
+
+
+insert  into  cmdb.user(name,uid,gid)values("bob",2001,2001);
+
+insert  into  cmdb.user(name,uid,gid)values("bob",2001,2001),("lucy",3001，2001),("jerry",2002,2001);
+
+
+
+++++++++++++++++++++++
+修改表记录字段值
+删除表记录
+
+
+
