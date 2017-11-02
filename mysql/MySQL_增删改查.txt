@@ -1,5 +1,5 @@
 管理工具 （自带的命令）
-------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
 数据导入:把系统文件的内容保存到数据库的表里。
 mysql>  LOAD   DATA  INFILE  "文件名" 
 INTO  TABLE  库名.表名
@@ -24,7 +24,7 @@ mysql> load data infile "/etc/passwd" into table cmdb.user fields  terminated  b
 Query OK, 25 rows affected (0.00 sec)
 Records: 25  Deleted: 0  Skipped: 0  Warnings: 0
 mysql>  alter table cmdb.user  add id int(2)  zerofill  primary key  auto_increment  first;
-------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
 数据导出:把表里的记录存放到系统文件里。
 把mysql库下user表的记录保存到系统文件/tmp/user.txt里
 
@@ -48,43 +48,34 @@ ERROR 1086 (HY000): File '/dataplj/b.txt' already exists
 [root@localhost ~]#setenforce   0 
 mysql> select  name,uid,gid from cmdb.user   into outfile "/dataplj/a.txt";
 mysql> select  *  from  cmdb.user  order by  uid   desc  limit  5   into  outfile   "/tmp/user5.txt";
-------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
 管理表记录（增删改查）
 select 查询表记录
 select  字段列表   from 表名；
-
 select  字段列表   from 表名   where   条件表达式；
-
 select   *   from  cmdb.user;
-
 select   name,uid   from  cmdb.user;
-
+---------------------------------------------------------------------
 查询条件  
-1 字符比较      =      !=
+1 字符比较 =   !=
 字段名   符号  “值” 
 select  *  from  user  where  name="root";
-
 select  name,shell  from  user  where  name!="root";
-
+---------------------------------------------------------------------
 2  数值比较
 字段名   符号  值
 =    !=     >    >=   <   <= 
-
 select    name,uid  from  user  where  uid=500;
-
+---------------------------------------------------------------------
 3  范围内查找
 between  ...  and  在... 之间
 in  (值列表)            在...里
 not  in  (值列表)    不在...里
-
 select  name,uid,gid,shell  from user  where   uid  between  100 and  150;
-
 select name  from user  where   name  in  ("rsync","lib",    "root");
-
 select name,uid  from user  where   uid   in  (10,2000,3001);
-
 select name,uid  from user  where   uid  not  in  (10,2000,3001);
-
+---------------------------------------------------------------------
 4  逻辑比较（多个查询条件）
 逻辑与    and  多个查询条件必须同时成立
 逻辑或   or     多个查询条件某个查询条件成立                      就可以
