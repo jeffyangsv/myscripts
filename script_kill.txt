@@ -4,6 +4,7 @@ screen -S beifenmingcheng
 退出终端并终止： crtl+D
 退出终端加后台运行：crtl+alt+A 
 
+
 rsync命令：
 rsync -avP --exclude='panel.war/'  /usr/local/jboss1/server/default/deploy/*  10.10.20.49:/usr/local/jboss1/server/default/deploy/
 
@@ -14,6 +15,7 @@ sed -i "s#/root/.influxdb#/App/data/OPS/influxdb#g" /App/conf/OPS/influxdb/influ
 #替换指定行的下一行
 sed -i "/^\[admin\]/{n;s/false/true/}" /App/conf/OPS/influxdb/influxdb.conf
 
+vim编辑时替换 ":%s/old/new/g"
 
 2.Cut使用技巧:
 
