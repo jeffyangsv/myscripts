@@ -2,6 +2,8 @@ Centos系列镜像下载地址 http://archive.kernel.org/centos-vault/
 Ubuntu系列镜像下载地址 http://mirrors.aliyun.com/ubuntu-releases/
 
 1.mysql
+https://downloads.mariadb.org/mariadb/10.2.10/
+
 
 2.zabbix
 源码包：wget https://sourceforge.net/projects/zabbix/files/latest/download/zabbix-3.2.4.tar.gz
