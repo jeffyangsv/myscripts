@@ -3,7 +3,8 @@ Ubuntu系列镜像下载地址 http://mirrors.aliyun.com/ubuntu-releases/
 
 1.mysql
 https://downloads.mariadb.org/mariadb/10.2.10/
-
+wget http://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.12.tar.gz
+http://blog.csdn.net/langzi7758521/article/details/51435985
 
 2.zabbix
 源码包：wget https://sourceforge.net/projects/zabbix/files/latest/download/zabbix-3.2.4.tar.gz
