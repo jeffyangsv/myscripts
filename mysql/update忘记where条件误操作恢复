@@ -1,0 +1,248 @@
+create table student(id int(2) AUTO_INCREMENT,name varchar(50),class varchar(50),score varchar(50), primary key (id) );
+insert student(name,class,score) value('a','1',56);
+insert student(name,class,score) value('b','1',61);
+insert student(name,class,score) value('c','2',78);
+insert student(name,class,score) value('d','2',45);
+insert student(name,class,score) value('e','3',76);
+insert student(name,class,score) value('f','4',89);
+insert student(name,class,score) value('g','4',43);
+insert student(name,class,score) value('h','4',90);
+select * from  student;
++----+------+-------+-------+
+| id | name | class | score |
++----+------+-------+-------+
+|  1 | a    | 1     |    56 |
+|  2 | b    | 1     |    61 |
+|  3 | c    | 2     |    78 |
+|  4 | d    | 2     |    45 |
+|  5 | e    | 3     |    76 |
+|  6 | f    | 3     |    89 |
+|  7 | g    | 4     |    43 |
+|  8 | h    | 4     |    90 |
++----+------+-------+-------+
+8 rows in set (0.00 sec)
+
+update student set score='failure';
+mysql> update student set score='failure';
+Query OK, 8 rows affected (0.00 sec)
+Rows matched: 8  Changed: 8  Warnings: 0
+
+mysql> select * from  student;
++----+------+-------+---------+
+| id | name | class | score   |
++----+------+-------+---------+
+|  1 | a    | 1     | failure |
+|  2 | b    | 1     | failure |
+|  3 | c    | 2     | failure |
+|  4 | d    | 2     | failure |
+|  5 | e    | 3     | failure |
+|  6 | f    | 4     | failure |
+|  7 | g    | 4     | failure |
+|  8 | h    | 4     | failure |
++----+------+-------+---------+
+8 rows in set (0.00 sec)
+
+[root@localhost data]# mysqlbinlog  --no-defaults -v -v --base64-output=DECODE-ROWS bin.000003 | grep -B 15 'failure'
+/*!*/;
+# at 103946
+#171203 13:03:22 server id 1913308  end_log_pos 104005 CRC32 0x1c248807 	Table_map: `test`.`student` mapped to number 26
+# at 104005
+#171203 13:03:22 server id 1913308  end_log_pos 104271 CRC32 0x2bdda232 	Update_rows: table id 26 flags: STMT_END_F
+### UPDATE `test`.`student`
+### WHERE
+###   @1=1 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='a' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='1' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='56' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=1 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='a' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='1' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=2 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='b' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='1' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='61' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=2 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='b' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='1' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=3 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='c' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='2' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='78' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=3 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='c' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='2' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=4 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='d' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='2' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='45' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=4 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='d' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='2' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=5 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='e' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='3' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='76' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=5 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='e' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='3' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=6 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='f' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='4' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='89' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=6 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='f' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='4' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=7 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='g' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='4' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='43' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=7 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='g' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='4' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=8 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='h' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='4' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='90' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=8 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='h' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='4' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+[root@localhost ~]# mysqlbinlog  --no-defaults -v -v --base64-output=DECODE-ROWS /App/data/mariadb/3308/data/bin.000003 | sed -n '/# at 104005/,/COMMIT/p' > /root/1.txt
+
+
+[root@localhost ~]# cat 1.txt 
+# at 104005
+#171203 13:03:22 server id 1913308  end_log_pos 104271 CRC32 0x2bdda232 	Update_rows: table id 26 flags: STMT_END_F
+### UPDATE `test`.`student`
+### WHERE
+###   @1=1 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='a' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='1' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='56' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=1 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='a' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='1' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=2 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='b' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='1' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='61' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=2 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='b' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='1' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=3 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='c' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='2' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='78' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=3 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='c' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='2' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=4 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='d' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='2' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='45' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=4 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='d' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='2' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=5 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='e' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='3' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='76' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=5 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='e' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='3' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=6 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='f' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='4' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='89' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=6 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='f' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='4' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=7 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='g' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='4' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='43' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=7 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='g' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='4' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### UPDATE `test`.`student`
+### WHERE
+###   @1=8 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='h' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='4' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='90' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+### SET
+###   @1=8 /* INT meta=0 nullable=0 is_null=0 */
+###   @2='h' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @3='4' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+###   @4='failure' /* VARSTRING(150) meta=150 nullable=1 is_null=0 */
+# at 104271
+#171203 13:03:22 server id 1913308  end_log_pos 104302 CRC32 0xd7afb7c6 	Xid = 1085
+COMMIT/*!*/;
+
+[root@localhost ~]# cat mysqlrecoversql.sh 
+#!/bin/bash
+Dir='/root'
+FIleBefore='1.txt'
+FileAfter='recover.sql'
+#RecoverCmd="sed '/WHERE/{:a;N;/SET/!ba;s/\([^\n]*\)\n\(.*\)\n\(.*\)/\3\n\2\n\1/}' ${Dir}/${FIleBefore} | sed -r '/WHERE/{:a;N;/@4/!ba;s/###   @2.*//g}' | sed 's/### //g;s/\/\*.*/,/g' | sed '/WHERE/{:a;N;/@1/!ba;s/,/;/g};s/#.*//g;s/COMMIT,//g' | sed '/^$/d' > ${Dir}/${FileAfter}"
+RecoverCmd="sed '/WHERE/{:a;N;/SET/!ba;s/\([^\n]*\)\n\(.*\)\n\(.*\)/\3\n\2\n\1/}' ${Dir}/${FIleBefore} |sed 's/### //g;s/\/\*.*/,/g' | sed -r '/WHERE/{:a;N;/@4/!ba;s/@2.*//g}' |sed -r '/SET/{:a;N;/@4/!ba;s/(@4.*)(,)/\1/g}' | sed '/WHERE/{:a;N;/@1/!ba;s/,/;/g};s/#.*//g;s/COMMIT,//g' | sed '/^$/d' > ${Dir}/${FileAfter}"
+RecoverAfter="sed -i 's/@1/id/g;s/@2/name/g;s/@3/class/g;s/@4/score/g'  ${Dir}/${FileAfter}"
+echo  ${RecoverCmd}
+echo  ${RecoverCmd}|sh
+echo ${RecoverAfter}|sh
+#cat ${Dir}/${FileAfter}
