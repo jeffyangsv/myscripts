@@ -54,3 +54,39 @@ git push origin master            #提交
 输入“git commit -m ‘first Commit’ ”，将任务提交并填写提交日志信息
 输入“git remote add origin https://github.com/gsb001/FirstPepo.git”，将远端https://github.com/gsb001/FirstPepo.git绑定到本地git上
 输入“git push -u origin master”，将任务推送到远端origin的master分支上
+
+
+5.脚本注释
+#!/bin/bash
+# ------------------------------------------------
+# Filename:    grafana.sh
+# Revision:    4.1.2
+# Date:        2017-02-23
+# Author:      GuoLikai
+# Email:       glk73748196@sina.com
+# Description: 
+# Notes:       
+# ------------------------------------------------
+
+# ----------------- Export -------------------
+export S_M_JID=$1
+# ----------------- Variable -----------------
+ScriptDir=$(cd $(dirname $0); pwd)
+ScriptFile="$S_CURR_PATH/../bin/srt_online"
+# ----------------- Include ------------------
+. ${ScriptDir}/../sbin/online_tools
+. ${ScriptDir}/../api/API_JobInfo
+. ${ScriptDir}/../api/API_Distribute
+# ----------------- Funciton -----------------
+# FunNo: 01
+# FunDescript: setup
+
+# FunNo: 02
+# FunDescript: setup
+# ----------------- Main ---------------------
+case "$1" in
+    "status"    ) fstatus;;
+    *           )
+    echo "$ScriptFile status               状态 $AppName"
+    ;;
+esac
