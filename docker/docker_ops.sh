@@ -11,11 +11,13 @@ AppName=Docker
 
 #安装Docker CE版本
 fdocker_install(){
+        yum remove docker docker-common docker-selinux docker-engine
 	yum install -y yum-utils device-mapper-persistent-data lvm2
 	yum-config-manager --enable extras
 	sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 	yum-config-manager --enable docker-ce-edge
 	yum makecache fast
+	#yum list docker-ce --showduplicates | sort -r
 	yum list docker-ce.x86_64  --showduplicates |sort -r
 	#yum -y install docker-ce-17.03.1.ce
 	#yum -y install docker-ce-17.07.0.ce-1
