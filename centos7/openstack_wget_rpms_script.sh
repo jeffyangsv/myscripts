@@ -13,6 +13,7 @@
 AppName=openstack
 AppSrcBase=/App/src/OPS
 AppScriptBase=/App/script/OPS
+AppNameWgetURL='http://mirror.centos.org/centos/7/cloud/x86_64'
 
 ScriptDir=$(cd $(dirname $0); pwd)
 ScriptFile=$(basename $0)
@@ -22,7 +23,7 @@ ScriptFile=$(basename $0)
 # FunDescript: Check Openstack Version
 
 fCheckVersion(){
-    wget -O /tmp/$1  http://mirror.centos.org/centos/7/cloud/x86_64/$1  &> /dev/null
+    wget -O /tmp/$1  ${AppNameWgetURL}/$1  &> /dev/null
     if [ $? == 0 ];then
         Version=$1
         rm -rf /tmp/$1
@@ -75,22 +76,22 @@ fAnalyRpm(){
     local AppSrcDir=`fCheckSrcDir ${OpenstackVersion}`
     local AppScriptDir=`fCheckScriptDir ${OpenstackVersion}`
     echo "版本号:${OpenstackVersion} 下载路径:${AppSrcDir} 脚本路径:${AppScriptDir}"
-    echo "http://mirror.centos.org/centos/7/cloud/x86_64/${OpenstackVersion}遍历rpm Starting"
+    echo "${AppNameWgetURL}/${OpenstackVersion}遍历rpm Starting"
     echo "#!/bin/bash"  >   ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh
-    wget -O ${AppScriptDir}/${OpenstackVersion}.html          http://mirror.centos.org/centos/7/cloud/x86_64/${OpenstackVersion} &> /dev/null
+    wget -O ${AppScriptDir}/${OpenstackVersion}.html          ${AppNameWgetURL}/${OpenstackVersion} &> /dev/null
     for RPM in `cat ${AppScriptDir}/${OpenstackVersion}.html | grep "href=" | awk -F"href="  '{print $2}' | awk -F"\""  '{print $2}'`
     do
         if [[ ${RPM} =~ "rpm" ]] &&  [[ ! -f ${AppSrcDir}/${RPM} ]];then
-              echo "wget -O ${AppSrcDir}/${RPM}     http://mirror.centos.org/centos/7/cloud/x86_64/${OpenstackVersion}/${RPM}"	>>  ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh
+              echo "wget -O ${AppSrcDir}/${RPM}     ${AppNameWgetURL}/${OpenstackVersion}/${RPM}"	>>  ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh
         fi
     done
 
-    echo "http://mirror.centos.org/centos/7/cloud/x86_64/${OpenstackVersion}/common遍历rpm Starting"
-    wget -O ${AppScriptDir}/${OpenstackVersion}_common.html   http://mirror.centos.org/centos/7/cloud/x86_64/${OpenstackVersion}/common &> /dev/null
+    echo "${AppNameWgetURL}/${OpenstackVersion}/common遍历rpm Starting"
+    wget -O ${AppScriptDir}/${OpenstackVersion}_common.html   ${AppNameWgetURL}/${OpenstackVersion}/common &> /dev/null
     for RPM in `cat ${AppScriptDir}/${OpenstackVersion}_common.html | grep "href=" | awk -F"href="  '{print $2}' | awk -F"\""  '{print $2}'`
     do
         if [[ ${RPM} =~ "rpm" ]] && [[ ! -f ${AppSrcDir}/common/${RPM} ]];then
-              echo "wget -O ${AppSrcDir}/common/${RPM}     http://mirror.centos.org/centos/7/cloud/x86_64/${OpenstackVersion}/common/${RPM}"	>>  ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh
+              echo "wget -O ${AppSrcDir}/common/${RPM}     ${AppNameWgetURL}/${OpenstackVersion}/common/${RPM}"	>>  ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh
         fi
     done
     chmod +x ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh
