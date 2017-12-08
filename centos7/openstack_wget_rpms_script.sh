@@ -1,15 +1,15 @@
- #!/bin/bash
-# ---------------------------------------------------------
+#!/bin/bash
+# -------------------------------------------------------
 # Filename:    openstack_wget_rpms_script.sh
 # Revision:    1.0
 # Date:        2017-12-8
 # Author:      GuoLikai
 # Email:       glk73748196@sina.com
-# Description: 下载OpenStack在线版本RPM包脚本
-# Notes: openstack-newton|openstack-ocata|openstack-pike      
-# ---------------------------------------------------------
+# Description: 下载OpenStack在线版本RPM包脚本 
+# Notes: openstack-newton|openstack-ocata|openstack-pike
+# -------------------------------------------------------
 
-# -------------- Export Variable -------------
+# -----------Export Variable -----------------
 AppName=openstack
 AppSrcBase=/App/src/OPS
 AppScriptBase=/App/script/OPS
@@ -37,7 +37,7 @@ fCheckVersion(){
 # FunDescript: Check Src Dir
 fCheckSrcDir(){
     local OpenstackVersion=$1
-    AppSrcDir=${AppSrcBase}/${OpenstackVersion}
+    local AppSrcDir=${AppSrcBase}/${OpenstackVersion}
     if [[ ! -d ${AppSrcDir}/common ]];then
         mkdir -p ${AppSrcDir}/common
     fi
@@ -48,7 +48,7 @@ fCheckSrcDir(){
 # FunDescript: Check Script Dir
 fCheckScriptDir(){
     local OpenstackVersion=$1
-    AppScriptDir=${AppScriptBase}/${OpenstackVersion}
+    local AppScriptDir=${AppScriptBase}/${OpenstackVersion}
     if [[ ! -d ${AppScriptDir} ]];then
        mkdir -p ${AppScriptDir}
     fi
@@ -59,15 +59,21 @@ fCheckScriptDir(){
 # FunNo: 04
 # FunDescript: Analy Openstack rpm
 fAnalyRpm(){
-	if [[  $1 =~ "openstack" ]];then
+    if [[  $1 =~ "openstack" ]];then
         OpenstackVersion=`fCheckVersion $1`
-	else
-		echo "OpenStack版本参数有误,会默认下载openstack-pike版本"
+        if [[ ${OpenstackVersion} != "$1" ]];then
+            echo "OpenStack版本${1}不存在,会默认下载${OpenstackVersion}版本"
+        fi
+    elif [[ ! $1 ]];then
         OpenstackVersion=openstack-pike
-	fi
+        echo "OpenStack版本参数为空,会默认下载${OpenstackVersion}版本"
+    else
+        OpenstackVersion=openstack-pike
+        echo "OpenStack版本参数有误,会默认下载${OpenstackVersion}版本"
+    fi
 
-    AppSrcDir=`fCheckSrcDir ${OpenstackVersion}`
-    AppScriptDir=`fCheckScriptDir ${OpenstackVersion}`
+    local AppSrcDir=`fCheckSrcDir ${OpenstackVersion}`
+    local AppScriptDir=`fCheckScriptDir ${OpenstackVersion}`
     echo "版本号:${OpenstackVersion} 下载路径:${AppSrcDir} 脚本路径:${AppScriptDir}"
     echo "http://mirror.centos.org/centos/7/cloud/x86_64/${OpenstackVersion}遍历rpm Starting"
     echo "#!/bin/bash"  >   ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh
@@ -78,6 +84,7 @@ fAnalyRpm(){
               echo "wget -O ${AppSrcDir}/${RPM}     http://mirror.centos.org/centos/7/cloud/x86_64/${OpenstackVersion}/${RPM}"	>>  ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh
         fi
     done
+
     echo "http://mirror.centos.org/centos/7/cloud/x86_64/${OpenstackVersion}/common遍历rpm Starting"
     wget -O ${AppScriptDir}/${OpenstackVersion}_common.html   http://mirror.centos.org/centos/7/cloud/x86_64/${OpenstackVersion}/common &> /dev/null
     for RPM in `cat ${AppScriptDir}/${OpenstackVersion}_common.html | grep "href=" | awk -F"href="  '{print $2}' | awk -F"\""  '{print $2}'`
@@ -86,14 +93,15 @@ fAnalyRpm(){
               echo "wget -O ${AppSrcDir}/common/${RPM}     http://mirror.centos.org/centos/7/cloud/x86_64/${OpenstackVersion}/common/${RPM}"	>>  ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh
         fi
     done
-      echo "${OpenstackVersion}版本RPM包Wget脚本收集完毕: ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh"
+    chmod +x ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh
+    echo "${OpenstackVersion}版本RPM包Wget脚本收集完毕: ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh"
 }
 
 # FunNo: 05
 # FunDescript: Download Openstack rpm
 fDownLoad(){
    OpenstackVersion=`fCheckVersion $1`
-   AppScriptDir=`fCheckScriptDir ${OpenstackVersion}`
+   local AppScriptDir=`fCheckScriptDir ${OpenstackVersion}`
    echo "版本号:${OpenstackVersion} 下载脚本路径:${AppScriptDir}"
    if [[  -f ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh ]];then
        #nohup /bin/bash  ${AppScriptDir}/${OpenstackVersion}_wget_rpms_script.sh &
