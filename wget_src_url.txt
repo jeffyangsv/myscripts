@@ -1,4 +1,5 @@
-Centos系列镜像下载地址 http://archive.kernel.org/centos-vault/
+Centos系列RPM下载地址  http://archive.kernel.org/centos-vault/
+Centos系列镜像下载地址 http://isoredirect.centos.org/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1708.iso
 Ubuntu系列镜像下载地址 http://mirrors.aliyun.com/ubuntu-releases/
 
 1.mysql
