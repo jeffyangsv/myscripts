@@ -82,12 +82,11 @@ EOF
 
 # 添加dns
 cat >> /etc/resolv.conf << EOF
-nameserver 202.106.0.20
 nameserver 223.5.5.5
 EOF
 
 # 安装基础应用
-yum -y --skip-broken install ntpdate screen wget rsync curl gcc vim-enhanced xz iftop sysstat dstat htop iotop lrzsz
+yum -y --skip-broken install ntpdate screen wget rsync curl gcc vim vim-enhanced xz iftop sysstat dstat htop iotop lrzsz
 
 # 创建基础文件夹
 mkdir -p /App/script/{SRT,OPS} /App/src/{SRT,OPS} /App/build/{SRT,OPS} /App/install/{SRT,OPS} /App/conf/{SRT,OPS} /App/log/{SRT,OPS} /App/opt/{SRT,OPS} /App/mnt/{UGC,RES} /App/data /App/backup/HOST
@@ -101,8 +100,9 @@ wget http://mirrors.aliyun.com/repo/Centos-6.repo -O /etc/yum.repos.d/CentOS-Bas
 yum -y install python-simplejson libselinux-python
 
 # Vim添加配置
+wget http://10.10.20.30/vim/molokai.vim -O /usr/share/vim/vim74/colors/molokai.vim
+grep -q "set number" /etc/vimrc || cat >> /etc/vimrc << EOF
 
-cat >> /etc/vimrc << EOF
 set number
 set tabstop=4
 set softtabstop=4
@@ -125,7 +125,8 @@ hi Type ctermfg=118 cterm=none
 hi Structure ctermfg=118 cterm=none
 hi Macro ctermfg=161 cterm=bold
 hi PreCondit ctermfg=161 cterm=bold
-EOF                                               
+EOF
+
 
 # 挂载tmpfs文件系统
 mount --bind /dev/shm /tmp
@@ -133,15 +134,23 @@ grep -q "/dev/shm" /etc/rc.local || echo "/bin/mount --bind /dev/shm /tmp" >> /e
 
 # 设置时间服务器
 #cat > /var/spool/cron/root << EOF
-#0  *  *  *  *  /usr/sbin/ntpdate 192.168.10.2 &> /dev/null
+0 * * * * /usr/sbin/ntpdate ntp.api.bz &> /dev/null
 #EOF
-#ntpdate 192.168.10.2 &> /dev/null
 
 
 #创建密钥
+SSH_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAxWNKngBgnhFsNgNLb1gmo99UwUvBxQU4qIJtrAOM5c+uf1FJXoeWyXp7oHEBcGjCPI9C/lQ6gJLKhz59TeondyNfBC6YzEqdwmOxNChm8UwpuiZlyNQz3KzFgZOvxXiqnq6iKgVQrKh/V4d4mroqojVu2i19e3CAfbgwom4uosHsD4uMZlqJ5Z7/LI/ZymVOphzR1tgBAhA25dlxa0gJOMEKfYjFUG7SFMVKWJfzKdL2g2UsjzRUWBxHdnyFyt3hMXThLsAF+gBv5KqMjVXfXxfqEVeiDE6xijRzZ42keKc/JPRU5bmiVcVTxrwlMnMXbT02EM9twB/yrlBcPHvxdw== root@localhost.localdomain"
 mkdir /root/.ssh
-echo 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAxWNKngBgnhFsNgNLb1gmo99UwUvBxQU4qIJtrAOM5c+uf1FJXoeWyXp7oHEBcGjCPI9C/lQ6gJLKhz59TeondyNfBC6YzEqdwmOxNCh
-m8UwpuiZlyNQz3KzFgZOvxXiqnq6iKgVQrKh/V4d4mroqojVu2i19e3CAfbgwom4uosHsD4uMZlqJ5Z7/LI/ZymVOphzR1tgBAhA25dlxa0gJOMEKfYjFUG7SFMVKWJfzKdL2g2UsjzRUWBxH
-dnyFyt3hMXThLsAF+gBv5KqMjVXfXxfqEVeiDE6xijRzZ42keKc/JPRU5bmiVcVTxrwlMnMXbT02EM9twB/yrlBcPHvxdw== root@localhost.localdomain' >> /root/.ssh/author
-ized_keys
+touch /root/.ssh/authorized_keys
+echo "${SSH_KEY}" >> /root/.ssh/authorized_keys
 chmod 600 /root/.ssh/authorized_keys
+echo "ssh key导入完成"
+
+cat << EOF
++--------------------------------------------------------------+
+|                    ===System init over===                    |
++--------------------------------------------------------------+
++---------------------------by GuoLikai--------------------------+
+EOF
+
+echo "---------------------------------------------------------------"
