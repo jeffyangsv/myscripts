@@ -1,0 +1,4 @@
+tar -izxvf full.tgz -C /App/backup/mysql/2017-12-20/
+cd /App/backup/mysql/2017-12-20/
+innobackupex  --defaults-file=/App/conf/OPS/mysql_3306/my.cnf --socket=/tmp/mysql_3306.sock --apply-log  --no-lock /App/backup/mysql/2017-12-21/
+innobackupex  --defaults-file=/App/conf/OPS/mysql_3306/my.cnf --socket=/tmp/mysql_3306.sock --copy-back  --no-lock /App/backup/mysql/2017-12-21/
