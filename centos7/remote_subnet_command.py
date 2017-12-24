@@ -7,12 +7,10 @@
 # Author:      GuoLikai
 # Description: "一个网段内远程批量执行命令"
 # --------------------------------------------------------------
-
 import paramiko
 import sys
 import threading
 import os
-
 def remote_comm(host,user,pwd,comm):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -42,6 +40,6 @@ if __name__ == '__main__':
         for ip  in ips:
             t = threading.Thread(target=remote_comm, args=(ip,user,password,comm))
             t.start()
-    elif len(sys.argv[1].split('.')) == 4:
+    elif len(sys.argv[1].split('.')) ==4:
         ip = sys.argv[1]
         remote_comm(ip,user,password,comm)
