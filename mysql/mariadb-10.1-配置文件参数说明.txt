@@ -1,0 +1,158 @@
+[client]
+port = 3306
+socket = /tmp/mariadb_3306.sock
+user=monitor
+host=localhost
+password='monitor'
+
+[mysqld]
+user = mysql
+port = 3306
+socket = /tmp/mariadb_3306.sock
+server-id = 168030191
+basedir=/App/opt/OPS/mariadb
+datadir=/App/data/mariadb/3306/data
+
+#----------------------------------------------------------------------------
+max_statement_time = 5                   #定义超过5秒的SQL语句，有DB自动杀死
+#----------------------------------------------------------------------------
+
+log-bin = /App/data/mariadb/3306/logs/bin-log/bin.log
+log-error = /App/data/mariadb/3306/logs/error-log/error.log
+pid-file = /App/data/mariadb/3306/mariadb_3306.pid
+long_query_time = 1
+slow_query_log
+slow_query_log_file = /App/data/mariadb/3306/logs/slow-log/slow.log
+log_slow_verbosity=query_plan
+binlog_cache_size = 4M
+binlog_format = row
+log_bin_trust_function_creators = 1 
+max_binlog_cache_size = 16M
+max_binlog_size = 1G
+expire_logs_days = 30
+ft_min_word_len = 4
+
+back_log = 3000
+max_allowed_packet = 128M
+max_connections = 6000
+max_connect_errors = 100
+
+join_buffer_size = 8M
+read_buffer_size = 32M
+read_rnd_buffer_size = 32M
+sort_buffer_size = 12M
+
+query_cache_size = 64M
+table_open_cache = 1024
+thread_cache_size = 120
+max_heap_table_size = 64M
+tmp_table_size = 64M
+thread_stack = 192K
+
+connect_timeout = 600
+interactive_timeout = 600
+wait_timeout = 600
+
+local-infile = 0
+skip-show-database
+skip-name-resolve
+skip-external-locking
+
+#New Optimze
+lower_case_table_names = 0
+query_cache_type = 1 
+performance_schema = 0
+net_read_timeout = 3600
+net_write_timeout = 3600
+
+#*** MyISAM
+key_buffer_size = 512M
+bulk_insert_buffer_size = 64M
+myisam_sort_buffer_size = 32M
+myisam_max_sort_file_size = 1G
+myisam_repair_threads = 1
+myisam_recover
+
+delay_key_write = ON 
+delayed_insert_limit = 4000
+delayed_insert_timeout = 600
+delayed_queue_size = 4000
+
+#*** INNODB
+#innodb_buffer_pool_size = 4G
+innodb_buffer_pool_size = 1G             #MySQL缓存池大小，一台服务器一个实例可以设置内存的80%；
+innodb_additional_mem_pool_size = 20M
+innodb_data_file_path = ibdata:32M:autoextend
+innodb_read_io_threads = 8
+innodb_write_io_threads = 12
+innodb_file_per_table = 1
+innodb_flush_log_at_trx_commit = 2
+innodb_log_buffer_size = 8M
+innodb_log_file_size = 256M
+innodb_log_files_in_group = 3
+innodb_max_dirty_pages_pct = 10
+#innodb_force_recovery = 4
+
+innodb_file_format = barracuda
+innodb_file_format_max = barracuda
+innodb_buffer_pool_instances = 4
+innodb_fast_shutdown = 0
+innodb_lock_wait_timeout = 3
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+transaction-isolation = READ-COMMITTED
+innodb_thread_concurrency = 0
+innodb_io_capacity = 200
+innodb_purge_threads = 1
+innodb_autoinc_lock_mode = 2
+innodb_stats_on_metadata = 0
+
+#InnoDB Buffer Pool预热改进
+innodb_buffer_pool_dump_at_shutdown = 1    #关闭MySQL时把热数据dump到本地磁盘
+innodb_buffer_pool_dump_now = 1 	       #采用手工方式把热数据dump到本地磁盘
+innodb_buffer_pool_load_at_startup = 1     #启动MySQL时把热数据加载到内存
+innodb_buffer_pool_load_now = 1 	       #采用手工方式把热数据加载到内存
+innodb_print_all_deadlocks = 1		       #死锁信息打印到错误日志
+innodb_defragment = 1                      #打开或关闭InnoDB碎片整理算法
+innodb_defragment_n_pages = 16             #一次性读取多少页进行合并整理操作，取值范围[2-32],默认为7
+
+
+#使用线程池处理连接
+thread_handling = pool-of-threads          #开启线程池
+thread_pool_oversubscribe = 30
+thread_pool_size = 64
+thread_pool_idle_timeout = 7200
+thread_pool_max_threads = 2000             #线程池创建2000个线程
+
+#回滚日志物理文件空间undo log，会从共享空间ibdata1拆分出去(MySQL-5.7支持，mariadb-10.1暂不支持)
+innodb_undo_log_truncate = 1		   #在线回收(收缩)undo log日志文件，支持动态设置；
+innodb_undo_directory = /App/data/mariadb/3306/data/        #指定存放的目录，默认是数据目录
+innodb_undo_logs = 128 			   #指定回滚段128KB
+innodb_undo_tablespaces = 4		   #指定多少个undo log文件，必须大于等于2；
+
+#*** Replication Slave
+#read-only
+#skip-slave-start
+relay-log = /App/data/mariadb/3306/logs/relay-log/relay.log
+log-slave-updates
+replicate-ignore-db=mysql
+slave-skip-errors=1032,1062,1007
+
+[mysqldump]
+quick
+max_allowed_packet = 16M
+
+[mysql]
+no-auto-rehash
+
+[myisamchk]
+key_buffer_size = 256M
+sort_buffer_size = 256M
+read_buffer = 2M
+write_buffer = 2M
+
+[mysqlhotcopy]
+interactive-timeout
+
+[mysqld_safe]
+open-files-limit = 60000
