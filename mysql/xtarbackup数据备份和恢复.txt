@@ -1,4 +1,16 @@
-tar -izxvf full.tgz -C /App/backup/mysql/2017-12-20/
-cd /App/backup/mysql/2017-12-20/
-innobackupex  --defaults-file=/App/conf/OPS/mysql_3306/my.cnf --socket=/tmp/mysql_3306.sock --apply-log  --no-lock /App/backup/mysql/2017-12-21/
-innobackupex  --defaults-file=/App/conf/OPS/mysql_3306/my.cnf --socket=/tmp/mysql_3306.sock --copy-back  --no-lock /App/backup/mysql/2017-12-21/
+#----------------------------------------------------------------------------------------------------------------------------------
+[root@localhost ~]#  tar -izxvf full.tgz -C /App/backup/mysql/2017-12-20/
+[root@localhost ~]#  cd /App/backup/mysql/2017-12-20/
+[root@localhost ~]#  innobackupex  --defaults-file=/App/conf/OPS/mysql_3306/my.cnf --socket=/tmp/mysql_3306.sock --apply-log  --no-lock /App/backup/mysql/2017-12-21/
+[root@localhost ~]#  /etc/init.d/mariadb_3306 stop           #停止数据库
+[root@localhost ~]#  rm -rf /App/data/mariadb/3306/data      #删除数据库原有数据
+
+[root@localhost ~]#  innobackupex  --defaults-file=/App/conf/OPS/mysql_3306/my.cnf --socket=/tmp/mysql_3306.sock --copy-back  --no-lock /App/backup/mysql/2017-12-21/
+
+
+#----------------------------------------------------------------------------------------------------------------------------------
+#备份数据库命令:
+[root@localhost ~]#  mysqldump -uroot -p'srtroot'  -S /tmp/mysql_3306.sock  -A  -B --master-data=1 --single-transaction > qishang_database_20171228.sql
+mysql_3306.sock  mysql_3307.sock  
+[root@localhost ~]#  mysqldump -uroot -p'srtroot'  -S /tmp/mysql_3306.sock  -A  -B --master-data=1 --single-transaction > qishang_database_20171228.sql
+#----------------------------------------------------------------------------------------------------------------------------------
