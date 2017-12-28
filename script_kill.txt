@@ -4,6 +4,11 @@ screen -S beifenmingcheng
 退出终端并终止： crtl+D
 退出终端加后台运行：crtl+alt+A 
 
+[root@localhost ~]# crontab -l
+0 1 * * * nohup /usr/bin/rsync -aP --password-file=/etc/pw root@172.16.1.100:data/data1/*  /App/data/172.16.1.100_data  &
+[root@localhost ~]# cat /etc/pw
+shangchaunmima
+
 linux-密码忘记处理办法:
 开机按e键，找到一个叫linux16行 添加rd.break console=tty0
 按ctrl + x  
