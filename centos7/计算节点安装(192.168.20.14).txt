@@ -1,0 +1,75 @@
+计算节点安装：
+yum install python-openstackclient -y
+yum install openstack-nova-compute -y
+systemctl enable libvirtd.service openstack-nova-compute.service
+yum install openstack-neutron-linuxbridge ebtables ipset -y
+   90  2016-12-02 13:53:00 yum-complete-transaction
+mkdir -p /App/data/nova/instances 
+chown -R nova.nova  /App/data/nova
+systemctl enable neutron-linuxbridge-agent.service
+cd /etc/nova/
+rsync -avP /etc/nova/nova.conf 192.168.20.14:/etc/nova/nova.conf
+vim nova.conf 
+mkdir -p /App/data/nova
+chown -R nova.nova  /App/data/nova
+rsync -avP plugins/ 192.168.20.14:/etc/neutron/plugins/  
+rsync -avP /etc/neutron/neutron.conf 192.168.20.14:/etc/neutron/neutron.conf
+[root@localhost neutron]# egrep "^[a-z]" neutron.conf 
+state_path = /var/lib/neutron
+auth_strategy = keystone
+core_plugin = ml2
+service_plugins = router
+notify_nova_on_port_status_changes = true
+notify_nova_on_port_data_changes = true
+rpc_backend = rabbit
+connection = mysql+pymysql://neutron:neutron@192.168.20.2/neutron
+auth_uri = http://192.168.20.2:5000
+auth_url = http://192.168.20.2:35357
+memcached_servers = 192.168.20.2:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = neutron
+password = srt@neutron
+auth_url = http://192.168.20.2:35357
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+region_name = RegionOne
+project_name = service
+username = nova
+password = srt@nova
+lock_path = /var/lib/neutron/tmp
+rabbit_host = 192.168.20.2
+rabbit_userid = openstack
+rabbit_password = openstack
+
+systemctl start neutron-linuxbridge-agent.service
+systemctl start libvirtd.service openstack-nova-compute.service
+
+hostnamectl set-hostname  ops-node18
+
+systemctl restart libvirtd.service openstack-nova-compute.service
+
+systemctl restart neutron-linuxbridge-agent.service
+
+yum install chrony -y
+systemctl enable chronyd.service
+timedatectl set-timezone Asia/Shanghai 
+systemctl status chronyd.service
+rsync -avP 192.168.20.3:/etc/chrony.conf   .
+systemctl restart  chronyd.service
+chronyc sources -v
+vim /etc/hosts
+chronyc sources -v
+
+tail -f /var/log/nova/nova-compute.log 
+
+vim /etc/sysctl.conf 
+
+#------------------------------------------------------------------------------------------------------
+systemctl status libvirtd.service neutron-linuxbridge-agent.service openstack-nova-compute.service 
+systemctl restart libvirtd.service neutron-linuxbridge-agent.service openstack-nova-compute.service
+
+#------------------------------------------------------------------------------------------------------
