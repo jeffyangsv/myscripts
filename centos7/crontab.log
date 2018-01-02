@@ -1,0 +1,26 @@
+[root@localhost ~]# crontab -l
+0 * * * * /usr/sbin/ntpdate ntp.api.bz &> /dev/null
+
+#Test By GuoLikai:Mv /opt/log/ to /App/log/SRT 
+#1 0 * * * /bin/bash /App/script/OPS/opt_log_mv_xz_log.sh logmv  &> /dev/null
+#1 2 * * * /bin/bash /App/script/OPS/opt_log_mv_xz_log.sh logxz  &> /dev/null
+
+#Test By GuoLikai:内核错误级别日志收集并报警 
+#*/2 * * * * /bin/bash /App/script/OPS/rsyslog/rsyslog_exec_task.sh main  &> /dev/null
+#10 00 * * *  /bin/bash /App/script/OPS/rsyslog/rsyslog_exec_task.sh logmv  &> /dev/null
+
+#Test By GuoLikai:数据库备份
+01  00 * * *  /bin/bash /App/script/OPS/xtrabackup/mariadb-xtrabackup_3306.sh &> /dev/null
+01  01 * * *  mysqldump -uroot -p'srtroot' -S /tmp/mariadb_3306.sock -A -B --events --master-data=1 --single-transaction >  /App/backup/mariadb/mariadb_3306_all_databases_`date -d '0 days' +'\%Y\%m\%d-\%H\%M\%S'`.sql
+#30 00 * * *  /bin/bash /App/script/OPS/xtrabackup/mysql-xtrabackup_3307.sh &> /dev/null
+
+#Test By GuoLikai:自定义数据库信息收集脚本
+#数据搜集
+10 00 * * *  su - root /root/workspace/mysql-script/mysql_collect_import_analy_data.sh collectmain  &> /dev/null
+#数据导入
+10 03 * * *  su - root /root/workspace/mysql-script/mysql_collect_import_analy_data.sh importmain  &> /dev/null
+#数据分析
+10 06 * * *  su - root /root/workspace/mysql-script/mysql_collect_import_analy_data.sh analymain 10  >> /App/backup/mysql_dbcount_analy.log
+
+##切割zabbix告警日志
+10 12 * * 7 /usr/local/bin/python3 /root/workspace/zabbix_alert/zabbix_alertmail_countanalyse.py  &>  /dev/null
