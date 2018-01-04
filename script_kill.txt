@@ -18,7 +18,10 @@ chroot /sysroot                     #进入chroot
 1.vim /etc/sysconf/selinux   禁用selinux
 2.touch /.autorelabel    #告知selinux 
 
-
+shell 输出重复字符串
+[root@localhost ~]# str=$(printf "%80s" "-")
+[root@localhost ~]# echo "${str// /-}"
+%80s 表示输出8个字符的字符串, 不够8个字符右对齐。
 
 rsync命令：
 rsync -avP --exclude='panel.war/'  /usr/local/jboss1/server/default/deploy/*  10.10.20.49:/usr/local/jboss1/server/default/deploy/
