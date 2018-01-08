@@ -1,33 +1,39 @@
-screen命令：
+1.screen命令：
 screen -S beifenmingcheng
 输入执行命令
 退出终端并终止： crtl+D
 退出终端加后台运行：crtl+alt+A 
 
+2.定时任务
 [root@localhost ~]# crontab -l
 0 1 * * * nohup /usr/bin/rsync -aP --password-file=/etc/pw root@172.16.1.100:data/data1/*  /App/data/172.16.1.100_data  &
+#Test By GuoLikai:数据库备份
+01  00 * * *  /bin/bash /App/script/OPS/xtrabackup/mariadb-xtrabackup_3306.sh &> /dev/null
+01  01 * * *  mysqldump -uroot -p'mima' -S /tmp/mariadb_3306.sock -A -B --events --master-data=1 --single-transaction >  /App/backup/mariadb/mariadb_3306_all_databases_`date -d '0 days' +'\%Y\%m\%d-\%H\%M\%S'`.sql
 [root@localhost ~]# cat /etc/pw
 shangchaunmima
 
-linux-密码忘记处理办法:
+
+3.linux-密码忘记处理办法:
 开机按e键，找到一个叫linux16行 添加rd.break console=tty0
 按ctrl + x  
 mount -o remount,rw /sysroot        #重新挂载/sysroot
 chroot /sysroot                     #进入chroot
 # echo '密码' |passwd --stdin root  #修改密码
-1.vim /etc/sysconf/selinux   禁用selinux
-2.touch /.autorelabel    #告知selinux 
+<1>.vim /etc/sysconf/selinux   禁用selinux
+<2>.touch /.autorelabel    #告知selinux 
+mkdir -p /App/{backup,build,conf,data,install,log,mnt,opt,scripts,src,srt,sync}/{OPS,SRT}
 
-shell 输出重复字符串
+4.shell 输出重复字符串
 [root@localhost ~]# str=$(printf "%80s" "-")
 [root@localhost ~]# echo "${str// /-}"
 %80s 表示输出8个字符的字符串, 不够8个字符右对齐。
 
-rsync命令：
+5.rsync命令：
 rsync -avP --exclude='panel.war/'  /usr/local/jboss1/server/default/deploy/*  10.10.20.49:/usr/local/jboss1/server/default/deploy/
 
-mkdir -p /App/{backup,build,conf,data,install,log,mnt,opt,scripts,src,srt,sync}/{OPS,SRT}
-1.Sed使用技巧:
+
+6.Sed使用技巧:
 #替换带特殊字符的语句
 sed -i "s#/root/.influxdb#/App/data/OPS/influxdb#g" /App/conf/OPS/influxdb/influxdb.conf
 #替换指定行的下一行
@@ -35,11 +41,11 @@ sed -i "/^\[admin\]/{n;s/false/true/}" /App/conf/OPS/influxdb/influxdb.conf
 
 vim编辑时替换 ":%s/old/new/g"
 
-2.Cut使用技巧:
+7.Cut使用技巧:
 
 
 
-3. Awk使用技巧:
+8. Awk使用技巧:
 <1>.求和
 cat data|awk '{sum+=$1} END {print "Sum = ", sum}'
 <2>.求平均
@@ -55,7 +61,7 @@ awk 'BEGIN {min = 1999999} {if ($1<min) min=$1 fi} END {print "Min=", min}'
 HOST=`/sbin/ifconfig eth0 |grep "inet addr" |awk -F[:" "] '{print $13}'` 
 
 
-4.Git使用命令:
+9.Git使用命令:
 《git &github 快速入门》 http://www.cnblogs.com/alex3714/articles/5930846.html 
 git clone https://github.com/guolikai/
 git status
@@ -74,7 +80,7 @@ git push origin master            #提交
 输入“git push -u origin master”，将任务推送到远端origin的master分支上
 
 
-5.脚本注释
+10.脚本注释
 #!/bin/bash
 # ------------------------------------------------
 # Filename:    grafana.sh
