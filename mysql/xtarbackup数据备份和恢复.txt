@@ -11,6 +11,6 @@
 #----------------------------------------------------------------------------------------------------------------------------------
 #备份数据库命令:
 [root@localhost ~]#  mysqldump -uroot -p'srtroot'  -S /tmp/mysql_3306.sock  -A  -B --events --master-data=1 --single-transaction > qishang_database_20171228.sql
-mysql_3306.sock  mysql_3307.sock  
+
 [root@localhost ~]#  mysqldump -uroot -p'srtroot'  -S /tmp/mysql_3306.sock  -A  -B --events --master-data=1 --single-transaction > qishang_database_20171228.sql
 #----------------------------------------------------------------------------------------------------------------------------------
