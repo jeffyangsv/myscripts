@@ -20,6 +20,7 @@ https://www.percona.com/downloads/percona-monitoring-plugins
 https://www.percona.com/software/mysql-tools/percona-monitoring-plugins
 
 3.grafana
+wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-4.6.3.linux-x64.tar.gz
 #https://grafana.com/grafana/download
 wget https://grafanarel.s3.amazonaws.com/builds/grafana-4.1.2-1486989747.linux-x64.tar.gz
 tar -zxvf grafana-4.1.2-1486989747.linux-x64.tar.gz
