@@ -1,12 +1,12 @@
 #!/bin/bash
-##################################################
-#Name:        osinit7.sh
-#Version:     v1.0
-#Create_Date：2017-4-3
-#Author:      GuoLikai(glk73748196@sina.com)
-#ISO:		  CentOS-7-x86_64-Minimal-1611.iso
-#Description: "脚本适用于Centos7的系统服务优化"
-##################################################
+#-------------------------------------------------
+#Name:         osinit7.sh
+#Version:      v1.0
+#Create_Date： 2017-4-3
+#Author:       GuoLikai(glk73748196@sina.com)
+#ISO:		       CentOS-7-x86_64-Minimal-1611.iso
+#Description:  "脚本适用于Centos7的系统服务优化"
+#-------------------------------------------------
 
 cat << EOF
 +--------------------------------------------------------------+
