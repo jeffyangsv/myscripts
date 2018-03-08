@@ -88,6 +88,15 @@ flogMv(){
      cat ${BackUpDir}/md5_old_${Yesterday}.log | awk '{print $2}' | xargs -i  mv  {} ${BackUpDir} &
 }
 
+#凌晨0点rsyslog日志切割
+flogCut(){
+    if [ -f ${ApplogDir}/rsyslog.log ];then
+#        mv  /App/log/SRT/rsyslog/rsyslog.log  /App/log/SRT/rsyslog/rsyslog_`date -d '-1 days' +'%Y%m%d'`.log
+        mv  ${ApplogDir}/rsyslog.log  ${ApplogDir}/rsyslog_${Yesterday}.log
+    fi
+    /etc/init.d/rsyslog  restart
+}
+
 
 ScriptDir=$(cd $(dirname $0); pwd)
 ScriptFile=$(basename $0)
@@ -97,12 +106,14 @@ case "$1" in
     "logdiff"   )    flogDiff;;
     "sendmail"  )    fSendMail $2 $3;;
     "logmv"     )    flogMv;;
+    "logcut"    )    flogCut;;
     "main"      )    fmain;;
     *           )
     echo "$ScriptFile logmd5              MD5 $AppName"
     echo "$ScriptFile logdiff             对比 $AppName"
     echo "$ScriptFile sendmail Theme Msg  邮件 $AppName"
     echo "$ScriptFile logmv               移动 $AppName"
+    echo "$ScriptFile logcut              切割 $AppName"
     echo "$ScriptFile main                执行 $AppName"
     ;;
 esac
