@@ -93,7 +93,10 @@ awk 'BEGIN {min = 1999999} {if ($1<min) min=$1 fi} END {print "Min=", min}'
 提取根分区使用率 df -hT / | tail -1 | awk '{print $6}'
 读取数据求和：du -s /data/mysql/3306/data/bin* |awk '{a+=$1}END{print a/1024/1024}'
 HOST=`/sbin/ifconfig eth0 |grep "inet addr" |awk -F[:" "] '{print $13}'` 
-
+#----------------------------------------------------------------------------------------------------------
+#获取nginx访问日志404的url并按降序排序，取最高10条
+cat  test.log | awk -F' ' '{if($9=404)print $9,$11}' | sort |uniq -c | sort -nr | grep -v - | head -10
+#----------------------------------------------------------------------------------------------------------
 
 10.Git使用命令:
 《git &github 快速入门》 http://www.cnblogs.com/alex3714/articles/5930846.html 
