@@ -1,0 +1,33 @@
+#-----------------------------------------------------------
+Dokcer安装:
+yum -y install docker
+systemctl start docker
+systemctl enable docker
+#-----------------------------------------------------------
+Dokcer常用命令:
+docker pull grafana
+docker push grafana
+docker ps -a
+docker ps -l
+docker images
+启动容器: docker run  -d --name mygrafana --it -p 3000:3000 Image_Name
+进入容器: docker attach  容器名字  
+   #备注： 进入后会因为exit，而是整个容器退出。
+        docker exec -i mygrafana /bin/bash
+   #按住"ctrl+P" + "ctrl+Q",在退出容器后可以继续执行。
+#-----------------------------------------------------------
+docker镜像制作：
+制作镜像：docker build -t mygrafana:v1 .  #("."表示Dockerfile的存放目录)
+导出镜像：docker save 容器ID/容器名字 > 容器名字.tar.gz
+导入镜像：docker load < 容器名字.tar.gz
+导出容器：docker export  容器ID/容器名字 > 容器名字.tar.gz
+导入容器：docker import < 容器名字.tar.gz
+         cat 容器名字.tar.gz | docker import version_name
+容器保存为镜像： docker commit 容器ID/容器名字 tag标签
+#-----------------------------------------------------------
+docker需要监控的信息：
+1、主机信息：{主机、容器名字、开机时间、用户登录、进程数、连接数、系统负载、流量}
+2、容器信息：{容器数量、CPU数量、镜像数量、物理内存大小、正在运行的容器、停止运行的容器}
+3、容器CPU使用：{单个容器CPU使用率、CPU使用大小TOP3、CPU使用大小}
+4、容器磁盘使用：{磁盘IO使用率、disk used大小、disk速度、disk使用率}
+5、容器网络使用：{网络eth0流量、网络eth1流量、系统连接数}
