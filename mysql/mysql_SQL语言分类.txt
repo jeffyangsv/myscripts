@@ -1,0 +1,14 @@
+#-----------------------------------------------------------
+MySQL语言分类：
+数据查询语言DQL: select 
+数据操纵语言DML: insert update delete
+数据定义语言DDL: create
+数据控制语言DCL: grant Rollback commit
+
+#-----------------------------------------------------------
+数据提交方式:
+1、显示提交 commit
+2、隐式提交 Alter audit comment connect create disconnect drop exit grant noaudit quit revoke rename
+3、自动提交 set autocommit on
+#-----------------------------------------------------------
+SQL查询时重复记录:可添加参数"-- distinct" 单表
