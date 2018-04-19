@@ -151,3 +151,10 @@ case "$1" in
     echo "$ScriptFile status               状态 $AppName"
     ;;
 esac
+
+12.生成一个MD5密码，并更新之数据库思路
+#1、生成一个MD5加密的密码
+[root@localhost ~]# echo  -n "adminroot" | openssl md5 |awk -F' ' '{print $2}'
+4b3626865dc6d5cfe1c60b855e68634a   
+#2、更新数据库里的信息
+    update user set password='4b3626865dc6d5cfe1c60b855e68634a' where userid='1';
