@@ -33,10 +33,19 @@ echo "--------------------------------------------------"
 
 
 2.screen命令：
+#-------------------------------------------------------
 screen -S beifenmingcheng
 输入执行命令
 退出终端并终止： crtl+D
-退出终端加后台运行：crtl+alt+A 
+#退出终端加后台运行：crtl+alt+A 
+退出终端加后台运行：ctrl a+d (小写a+d)
+#-------------------------------------------------------
+screen -S yourname -> 新建一个叫yourname的session
+screen -ls -> 列出当前所有的session
+screen -r yourname -> 回到yourname这个session
+screen -d yourname -> 远程detach某个session
+screen -d -r yourname -> 结束当前session并回到yourname这个session
+#-------------------------------------------------------
 
 3.定时任务
 [root@localhost ~]# crontab -l
