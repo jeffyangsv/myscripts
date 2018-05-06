@@ -1,0 +1,16 @@
+rabbitmq概念:
+rabbitmq消息队列: 消息中间件 异步时使用 主要解决异步问题。
+线程Queue:在同一个进程中的不同线程之间的数据交互。
+进程Queue:多个进程之间的交互。
+Rabbitmq： erlang语言开发(爱立信公司)，端口5672，web访问15672.
+
+Python调用: 安装pika模块。
+pip3 install pika –upgrade –I http://pypi.douban.com/si,ple –trusted_host pypi.douban.com
+
+WebUI管理：
+> rabbitmq-plugins enable rabbitmq_management 
+创建rabbitmq用户并授权：
+> rabbitmqctl add_user srtroot srtadmin
+> rabbitmqctl set_user_tags srtroot administrator
+> rabbitmqctl set_permission –p / srtroot  ".*" ".*" ".*" 
+
