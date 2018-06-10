@@ -68,3 +68,6 @@ http://baijiahao.baidu.com/s?id=1567710359169274&wfr=spider&for=pc
 
 11.docker ce
  wget https://download.docker.com/linux/centos/7/x86_64/edge/Packages/docker-ce-17.11.0.ce-1.el7.centos.x86_64.rpm
+
+12.jenkins下载war包
+wget http://updates.jenkins-ci.org/download/war/2.126/jenkins.war
