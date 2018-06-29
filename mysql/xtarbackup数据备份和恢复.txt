@@ -1,16 +1,28 @@
+#xtarbackup备份数据库命令:
+[root@localhost ~]# cat mysql_test.sh 
+#!/bin/bash
+innobackupex --defaults-file=/App/conf/OPS/mysql_3306/my.cnf  --no-timestamp --no-version-check --parallel=8 --safe-slave-backup --slave-info --user backup --password backup@123 --stream=tar /data/backup/mysql/2017-12-20 2>/data/backup/logs/mysql.2017-12-20.log | gzip 1>/data/backup/mysql/2017-12-20/full.tgz
+echo "OK"
+[root@localhost ~]# sh mysql_test.sh 
+OK
 #----------------------------------------------------------------------------------------------------------------------------------
 [root@localhost ~]#  tar -izxvf full.tgz -C /App/backup/mysql/2017-12-20/
 [root@localhost ~]#  cd /App/backup/mysql/2017-12-20/
-[root@localhost ~]#  innobackupex  --defaults-file=/App/conf/OPS/mysql_3306/my.cnf --socket=/tmp/mysql_3306.sock --apply-log  --no-lock /App/backup/mysql/2017-12-21/
+[root@localhost ~]#  innobackupex  --defaults-file=/App/conf/OPS/mysql_3306/my.cnf --socket=/tmp/mysql_3306.sock --apply-log  --no-lock /App/backup/mysql/2017-12-20/
 [root@localhost ~]#  /etc/init.d/mariadb_3306 stop           #停止数据库
 [root@localhost ~]#  rm -rf /App/data/mariadb/3306/data      #删除数据库原有数据
 
-[root@localhost ~]#  innobackupex  --defaults-file=/App/conf/OPS/mysql_3306/my.cnf --socket=/tmp/mysql_3306.sock --copy-back  --no-lock /App/backup/mysql/2017-12-21/
+[root@localhost ~]#  innobackupex  --defaults-file=/App/conf/OPS/mysql_3306/my.cnf --socket=/tmp/mysql_3306.sock --copy-back  --no-lock /App/backup/mysql/2017-12-20/
 
 
 #----------------------------------------------------------------------------------------------------------------------------------
-#备份数据库命令:
+#mysql备份数据库命令:
 [root@localhost ~]#  mysqldump -uroot -p'srtroot'  -S /tmp/mysql_3306.sock  -A  -B --events --master-data=1 --single-transaction > qishang_database_20171228.sql
 
 [root@localhost ~]#  mysqldump -uroot -p'srtroot'  -S /tmp/mysql_3306.sock  -A  -B --events --master-data=1 --single-transaction > qishang_database_20171228.sql
+#----------------------------------------------------------------------------------------------------------------------------------
+
+#mysql5.7.21备份数据库命令:
+[root@VM_10_198_centos ~]# crontab -l
+01  01 * * *  /opt/mysql/bin/mysqldump -ubackup -p'backup@123' -A -B --master-data=1 --single-transaction --set-gtid-purged=OFF  >  /data/backup/mysql_all_databases_`date -d '0 days' +'\%Y\%m\%d-\%H\%M\%S'`.sql
 #----------------------------------------------------------------------------------------------------------------------------------
