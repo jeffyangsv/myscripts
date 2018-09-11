@@ -14,7 +14,7 @@ fdocker_install(){
         yum remove docker docker-common docker-selinux docker-engine
 	yum install -y yum-utils device-mapper-persistent-data lvm2
 	yum-config-manager --enable extras
-	sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+	yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 	yum-config-manager --enable docker-ce-edge
 	yum makecache fast
 	#yum list docker-ce --showduplicates | sort -r
@@ -22,8 +22,8 @@ fdocker_install(){
 	#yum -y install docker-ce-17.03.1.ce
 	#yum -y install docker-ce-17.07.0.ce-1
 	yum -y install docker-ce.x86_64
-	systemctl start dokcer
-	systemctl enable dokcer
+	systemctl start docker
+	systemctl enable docker
 }
 
 #指定容器IP配置
