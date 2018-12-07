@@ -13,9 +13,9 @@ INNOBACKUPEX_PATH=innobackupex  #INNOBACKUPEX的命令
 INNOBACKUPEXFULL=/usr/bin/$INNOBACKUPEX_PATH  #INNOBACKUPEX的命令路径
  
 #mysql目标服务器以及用户名和密码
-MYSQL_CMD="--host=172.19.196.53 --user=root --password=password --port=3306"  
+MYSQL_CMD="--host=localhost --user=root --password=****** --port=3306"  
  
-MYSQL_UP=" --user=root --password='password' --port=3306 "  #mysqladmin的用户名和密码
+MYSQL_UP=" --user=root --password='******' --port=3306 "  #mysqladmin的用户名和密码
  
 TMPLOG="/tmp/innobackupex.$$.log"
  
@@ -25,7 +25,9 @@ MYSQL=/usr/bin/mysql
  
 MYSQL_ADMIN=/usr/bin/mysqladmin
  
-BACKUP_DIR=/data/backup/lxqb # 备份的主目录
+BACKUP_DIR=/data/backup/hsqb # 备份的主目录
+
+BACKUPLOG_DIR=$BACKUP_DIR/log #备份日志目录
 
 BACKUP_DBNAME=smartdatadb  #备份的数据库
  
@@ -66,8 +68,8 @@ fi
  
  
  
-if [ ! -d $BACKUP_DIR ]; then
-  error "备份目标文件夹:$BACKUP_DIR不存在."
+if [ ! -d $BACKUPLOG_DIR ]; then
+  error "备份目标文件夹:$BACKUPLOG_DIR不存在."
 fi
  
  
@@ -140,7 +142,7 @@ if [ "$LATEST_FULL_BACKUP" -a `expr $LATEST_FULL_BACKUP_CREATED_TIME + $FULLBACK
  
 	#保留一份备份的详细日志
  
-	cat $TMPLOG>$BACKUP_DIR/$logfiledate
+	cat $TMPLOG>$BACKUPLOG_DIR/$logfiledate
  
 	if [ -z "`tail -1 $TMPLOG | grep 'completed OK!'`" ] ; then
 	 echo "$INNOBACKUPEX命令执行失败:"; echo
@@ -184,7 +186,7 @@ else
 	$INNOBACKUPEXFULL --defaults-file=$MY_CNF  --use-memory=2G  $MYSQL_CMD --databases=$BACKUP_DBNAME $FULLBACKUP_DIR > $TMPLOG 2>&1 
 	#保留一份备份的详细日志
  
-	cat $TMPLOG>$BACKUP_DIR/$logfiledate
+	cat $TMPLOG>$BACKUPLOG_DIR/$logfiledate
  
  
 	if [ -z "`tail -1 $TMPLOG | grep 'completed OK!'`" ] ; then
@@ -224,18 +226,18 @@ fi
 #删除过期的全备
  
 echo -e "find expire backup file...........waiting........."
-echo -e "寻找过期(超过5天)的全备文件并删除">>$BACKUP_DIR/$logfiledate
-for efile in $(/usr/bin/find $FULLBACKUP_DIR/ -mtime +4)
-do
-	if [ -d ${efile} ]; then
-	rm -rf "${efile}"
-	echo -e "删除过期全备文件:${efile}" >>$BACKUP_DIR/$logfiledate
-	elif [ -f ${efile} ]; then
-	rm -rf "${efile}"
-	echo -e "删除过期全备文件:${efile}" >>$BACKUP_DIR/$logfiledate
-	fi;
-	
-done
+echo -e "寻找过期(超过4天)的全备文件并删除">>$BACKUPLOG_DIR/$logfiledate
+EXPIRE_FULLDIR=$(/usr/bin/find $FULLBACKUP_DIR/ -maxdepth 1 -mtime +4)
+if [ -d ${EXPIRE_FULLDIR} ];then
+    EXPIRE_DIR=`basename ${EXPIRE_FULLDIR}`
+    EXPIRE_INCREDIR=${INCRBACKUP_DIR}/${EXPIRE_DIR}
+    rm -rf "${EXPIRE_FULLDIR}"
+	echo -e "删除过期全备文件:${EXPIRE_FULLDIR}" >>$BACKUPLOG_DIR/$logfiledate
+    rm -rf "${EXPIRE_INCREDIR}"
+	echo -e "删除过期增量备份文件:${EXPIRE_INCREDIR}" >>$BACKUPLOG_DIR/$logfiledate	
+fi
+
+
 if [ $? -eq "0" ];then
    echo
    echo -e "未找到可以删除的过期全备文件"
@@ -243,4 +245,3 @@ fi
 echo
 echo "完成于: `date +%F' '%T' '%w`"
 exit 0
-
