@@ -228,7 +228,7 @@ fi
 echo -e "find expire backup file...........waiting........."
 echo -e "寻找过期(超过4天)的全备文件并删除">>$BACKUPLOG_DIR/$logfiledate
 EXPIRE_FULLDIR=$(/usr/bin/find $FULLBACKUP_DIR/ -maxdepth 1 -mtime +4)
-if [ -d ${EXPIRE_FULLDIR} ];then
+if [[ -d ${EXPIRE_FULLDIR} ]] && [[ -n ${EXPIRE_FULLDIR} ]];then
     EXPIRE_DIR=`basename ${EXPIRE_FULLDIR}`
     EXPIRE_INCREDIR=${INCRBACKUP_DIR}/${EXPIRE_DIR}
     rm -rf "${EXPIRE_FULLDIR}"
